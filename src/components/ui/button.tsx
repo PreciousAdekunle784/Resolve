@@ -1,0 +1,78 @@
+import Link from "next/link";
+import { clsx } from "clsx";
+import type { ComponentProps, ReactNode } from "react";
+import { Spinner } from "./spinner";
+
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "dark";
+type Size = "sm" | "md" | "lg";
+
+const base =
+  "inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] font-medium whitespace-nowrap transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2";
+
+const variants: Record<Variant, string> = {
+  primary: "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 focus-visible:outline-brand-600",
+  secondary:
+    "bg-white text-ink-900 border border-ink-200 hover:bg-ink-50 hover:border-ink-300 active:bg-ink-100 focus-visible:outline-brand-600",
+  ghost: "text-ink-700 hover:bg-ink-100 hover:text-ink-900 focus-visible:outline-brand-600",
+  danger: "bg-danger-700 text-white hover:bg-danger-600 focus-visible:outline-danger-700",
+  dark: "bg-white text-ink-950 hover:bg-ink-100 focus-visible:outline-white",
+};
+
+const sizes: Record<Size, string> = {
+  sm: "h-8 px-3 text-sm",
+  md: "h-10 px-4 text-sm",
+  lg: "h-12 px-5 text-base",
+};
+
+export function buttonClasses({
+  variant = "primary",
+  size = "md",
+  className,
+}: { variant?: Variant; size?: Size; className?: string } = {}) {
+  return clsx(base, variants[variant], sizes[size], className);
+}
+
+type ButtonProps = ComponentProps<"button"> & {
+  variant?: Variant;
+  size?: Size;
+  loading?: boolean;
+  loadingText?: string;
+  icon?: ReactNode;
+};
+
+export function Button({
+  variant,
+  size,
+  loading = false,
+  loadingText,
+  icon,
+  className,
+  children,
+  disabled,
+  type = "button",
+  ...props
+}: ButtonProps) {
+  return (
+    <button
+      type={type}
+      className={buttonClasses({ variant, size, className })}
+      disabled={disabled || loading}
+      aria-busy={loading || undefined}
+      {...props}
+    >
+      {loading ? <Spinner className="size-4" /> : icon}
+      {loading && loadingText ? loadingText : children}
+    </button>
+  );
+}
+
+type ButtonLinkProps = ComponentProps<typeof Link> & { variant?: Variant; size?: Size; icon?: ReactNode };
+
+export function ButtonLink({ variant, size, icon, className, children, ...props }: ButtonLinkProps) {
+  return (
+    <Link className={buttonClasses({ variant, size, className })} {...props}>
+      {icon}
+      {children}
+    </Link>
+  );
+}
