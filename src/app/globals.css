@@ -3,34 +3,41 @@
 /*
  * Resolve design tokens
  * ---------------------
- * ink    — deep navy neutrals for text, borders and dark surfaces
- * brand  — restrained teal for primary actions and links
+ * ink    — neutral greys for text, borders and surfaces (near-black at 950)
+ * brand  — electric blue for primary actions, links and glow effects
+ * night  — the dark marketing surfaces (landing page, auth panel)
  * success / warning / danger — status colours (resolved / pending / errors)
  * All text/background pairings used in the UI meet WCAG AA contrast.
  */
 @theme {
-  --font-sans: var(--font-plex-sans), ui-sans-serif, system-ui, sans-serif;
+  --font-sans: var(--font-inter), ui-sans-serif, system-ui, sans-serif;
   --font-mono: var(--font-plex-mono), ui-monospace, SFMono-Regular, monospace;
 
-  --color-ink-950: #0a1424;
-  --color-ink-900: #0f1c30;
-  --color-ink-800: #1b2a42;
-  --color-ink-700: #2c3d58;
-  --color-ink-600: #4a5b76;
-  --color-ink-500: #66758c;
-  --color-ink-400: #98a3b3;
-  --color-ink-300: #c4cbd5;
-  --color-ink-200: #dfe3e9;
-  --color-ink-100: #eef1f4;
-  --color-ink-50: #f6f7f9;
+  --color-ink-950: #0b0d12;
+  --color-ink-900: #17191e;
+  --color-ink-800: #26292f;
+  --color-ink-700: #3a3d44;
+  --color-ink-600: #565a62;
+  --color-ink-500: #6b6f77;
+  --color-ink-400: #a1a4aa;
+  --color-ink-300: #cfd1d4;
+  --color-ink-200: #e6e7e9;
+  --color-ink-100: #f0f0f1;
+  --color-ink-50: #f7f7f6;
 
-  --color-brand-800: #084850;
-  --color-brand-700: #0a5a63;
-  --color-brand-600: #0b6e79;
-  --color-brand-500: #12838f;
-  --color-brand-300: #7cc3c9;
-  --color-brand-100: #dcefef;
-  --color-brand-50: #eef7f7;
+  --color-brand-800: #1e40af;
+  --color-brand-700: #1d4ed8;
+  --color-brand-600: #2563eb;
+  --color-brand-500: #3b82f6;
+  --color-brand-400: #60a5fa;
+  --color-brand-300: #93c5fd;
+  --color-brand-100: #dbeafe;
+  --color-brand-50: #eff6ff;
+
+  --color-night-950: #03040a;
+  --color-night-900: #070a14;
+  --color-night-800: #0c1120;
+  --color-night-700: #141b30;
 
   --color-success-700: #15693a;
   --color-success-600: #1a7f46;
@@ -48,11 +55,11 @@
   --color-danger-100: #fbd9d4;
   --color-danger-50: #fdeeec;
 
-  --radius-control: 0.5rem;
-  --radius-card: 0.75rem;
+  --radius-control: 0.75rem;
+  --radius-card: 1rem;
 
-  --shadow-card: 0 1px 2px rgb(10 20 36 / 0.04), 0 1px 1px rgb(10 20 36 / 0.03);
-  --shadow-raised: 0 4px 16px -4px rgb(10 20 36 / 0.12), 0 2px 4px -2px rgb(10 20 36 / 0.06);
+  --shadow-card: 0 1px 2px rgb(11 13 18 / 0.04);
+  --shadow-raised: 0 12px 32px -8px rgb(11 13 18 / 0.18), 0 2px 6px -2px rgb(11 13 18 / 0.08);
 
   --animate-fade-in: fade-in 180ms ease-out;
   @keyframes fade-in {
@@ -77,7 +84,7 @@
     background: var(--color-ink-50);
     color: var(--color-ink-900);
     font-family: var(--font-sans);
-    font-feature-settings: "ss01";
+    font-feature-settings: "cv11", "ss01";
   }
 
   ::selection {
@@ -125,4 +132,60 @@
   @media (width >= 40rem) {
     padding-inline: 1.5rem;
   }
+}
+
+/* --------------------------------------------------------------------------
+ * Marketing "night" effects: light beams, star field, glowing horizon
+ * ------------------------------------------------------------------------ */
+@utility night-grid {
+  background-image:
+    linear-gradient(to right, rgb(255 255 255 / 0.035) 1px, transparent 1px),
+    linear-gradient(to bottom, rgb(255 255 255 / 0.035) 1px, transparent 1px);
+  background-size: 72px 72px;
+}
+
+@utility star-field {
+  background-image:
+    radial-gradient(1px 1px at 12% 18%, rgb(255 255 255 / 0.55), transparent 60%),
+    radial-gradient(1px 1px at 28% 62%, rgb(255 255 255 / 0.35), transparent 60%),
+    radial-gradient(1.5px 1.5px at 44% 8%, rgb(191 219 254 / 0.6), transparent 60%),
+    radial-gradient(1px 1px at 63% 34%, rgb(255 255 255 / 0.4), transparent 60%),
+    radial-gradient(1.5px 1.5px at 78% 14%, rgb(191 219 254 / 0.55), transparent 60%),
+    radial-gradient(1px 1px at 88% 52%, rgb(255 255 255 / 0.35), transparent 60%),
+    radial-gradient(1px 1px at 6% 78%, rgb(255 255 255 / 0.3), transparent 60%),
+    radial-gradient(1px 1px at 54% 82%, rgb(255 255 255 / 0.25), transparent 60%);
+}
+
+/* A soft cone of light coming in from a top corner. */
+@utility light-beam {
+  position: absolute;
+  top: -12%;
+  width: 34%;
+  height: 78%;
+  pointer-events: none;
+  background: linear-gradient(180deg, rgb(165 180 252 / 0.95) 0%, rgb(99 102 241 / 0.45) 30%, rgb(59 130 246 / 0.12) 62%, transparent 85%);
+  filter: blur(22px);
+}
+
+/* The glowing planet horizon. */
+@utility horizon {
+  position: absolute;
+  left: 50%;
+  width: 1700px;
+  height: 1700px;
+  transform: translateX(-50%);
+  border-radius: 9999px;
+  background: radial-gradient(closest-side, #03040a 92%, #050a1c 100%);
+  box-shadow:
+    0 0 0 1.5px rgb(147 197 253 / 0.95),
+    0 -10px 40px 4px rgb(59 130 246 / 0.85),
+    0 -40px 140px 30px rgb(37 99 235 / 0.45),
+    inset 0 24px 60px -18px rgb(59 130 246 / 0.75);
+}
+
+@utility glass-card {
+  border: 1px solid rgb(255 255 255 / 0.09);
+  background: linear-gradient(180deg, rgb(20 27 48 / 0.72), rgb(7 10 20 / 0.72));
+  box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 20px 60px -20px rgb(0 0 0 / 0.8);
+  backdrop-filter: blur(12px);
 }

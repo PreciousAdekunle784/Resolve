@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { GuidanceCard } from "@/components/guidance-card";
+import { MarketingPageShell } from "@/components/marketing/prose-page";
 import { Alert } from "@/components/ui/alert";
 import { EmptyState } from "@/components/ui/misc";
 import { isSupabaseConfigured } from "@/lib/env";
@@ -26,21 +27,18 @@ export default async function GuidancePage() {
   }
 
   return (
-    <div className="container-page max-w-4xl py-14">
-      <p className="text-xs font-semibold tracking-wider text-brand-700 uppercase">Nigeria</p>
-      <h1 className="mt-2 text-3xl font-semibold text-ink-950">Official complaint guidance</h1>
-      <p className="mt-3 max-w-2xl leading-relaxed text-ink-600">
-        Links to official sources about complaining to financial institutions and escalating complaints. Each entry
-        shows whether Resolve has verified it and when. Official processes and timelines vary and can change, so always
-        confirm with the official source.
-      </p>
-
-      <Alert tone="info" className="mt-6" title="Start with your financial institution">
+    <MarketingPageShell
+      wide
+      eyebrow="Nigeria"
+      title="Official complaint guidance"
+      intro="Links to official sources about complaining to financial institutions and escalating complaints. Each entry shows whether Resolve has verified it and when. Official processes and timelines vary and can change, so always confirm with the official source."
+    >
+      <Alert tone="info" title="Start with your financial institution">
         Your bank or payment provider holds the records of your transaction and is usually best placed to investigate
         it first. Keep any complaint reference number they give you.
       </Alert>
 
-      <div className="mt-8 space-y-4">
+      <div className="mt-6 space-y-4">
         {error ? (
           <Alert tone="error">{error}</Alert>
         ) : rows.length === 0 ? (
@@ -49,6 +47,6 @@ export default async function GuidancePage() {
           rows.map((g) => <GuidanceCard key={g.id} g={g} />)
         )}
       </div>
-    </div>
+    </MarketingPageShell>
   );
 }

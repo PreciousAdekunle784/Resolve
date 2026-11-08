@@ -1,20 +1,22 @@
 import Link from "next/link";
 import { clsx } from "clsx";
 
-/** The Resolve mark: an open path closing into a checkpoint. */
+/** The Resolve mark: a blue tile with an "R" whose leg resolves into a check. */
 export function LogoMark({ className }: { className?: string }) {
   return (
     <svg viewBox="0 0 32 32" className={clsx("size-7", className)} aria-hidden="true">
-      <rect width="32" height="32" rx="8" fill="currentColor" />
+      <rect width="32" height="32" rx="8" fill="#2563eb" />
+      <rect width="32" height="16" rx="8" fill="#3b82f6" opacity="0.55" />
+      <rect y="8" width="32" height="8" fill="#3b82f6" opacity="0.55" />
       <path
-        d="M10 22V11.5a1.5 1.5 0 011.5-1.5h5.25a4 4 0 010 8H13"
+        d="M11 23V9.5h5.75a4.25 4.25 0 010 8.5H11"
         stroke="white"
-        strokeWidth="2.4"
+        strokeWidth="2.6"
         strokeLinecap="round"
         strokeLinejoin="round"
         fill="none"
       />
-      <path d="M17 18l5 4" stroke="#7cc3c9" strokeWidth="2.4" strokeLinecap="round" />
+      <path d="M16.5 18.5l2.25 2.5 4.25-5" stroke="#bfdbfe" strokeWidth="2.4" strokeLinecap="round" strokeLinejoin="round" fill="none" />
     </svg>
   );
 }
@@ -24,12 +26,12 @@ export function Logo({ href = "/", tone = "dark" }: { href?: string; tone?: "dar
     <Link
       href={href}
       className={clsx(
-        "inline-flex items-center gap-2 rounded-md text-[1.0625rem] font-semibold tracking-tight",
+        "inline-flex items-center gap-2.5 rounded-md text-[1.0625rem] font-semibold tracking-tight",
         tone === "dark" ? "text-ink-950" : "text-white",
       )}
       aria-label="Resolve home"
     >
-      <LogoMark className={tone === "dark" ? "text-ink-950" : "text-brand-600"} />
+      <LogoMark />
       Resolve
     </Link>
   );

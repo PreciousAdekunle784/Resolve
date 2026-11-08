@@ -295,6 +295,8 @@ function condition(col, opval, params) {
     case "lt": return `${c} < ${push(unquote(val))}`;
     case "lte": return `${c} <= ${push(unquote(val))}`;
     case "is": return `${c} is ${val === "null" ? "null" : val === "true" ? "true" : "false"}`;
+    case "like": return `${c}::text like ${push(unquote(val).replace(/\*/g, "%"))}`;
+    case "ilike": return `${c}::text ilike ${push(unquote(val).replace(/\*/g, "%"))}`;
     case "in": {
       const list = splitTopLevel(val.replace(/^\(/, "").replace(/\)$/, "")).map(unquote);
       return `${c}::text = any(${push(list)}::text[])`;

@@ -3,25 +3,28 @@ import { clsx } from "clsx";
 import type { ComponentProps, ReactNode } from "react";
 import { Spinner } from "./spinner";
 
-type Variant = "primary" | "secondary" | "ghost" | "danger" | "dark";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "dark" | "glow" | "glass";
 type Size = "sm" | "md" | "lg";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-[var(--radius-control)] font-medium whitespace-nowrap transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2";
+  "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2";
 
 const variants: Record<Variant, string> = {
-  primary: "bg-brand-600 text-white hover:bg-brand-700 active:bg-brand-800 focus-visible:outline-brand-600",
+  primary:
+    "bg-brand-600 text-white shadow-[inset_0_1px_0_rgb(255_255_255/0.18),0_1px_2px_rgb(37_99_235/0.3)] hover:bg-brand-700 active:bg-brand-800 focus-visible:outline-brand-600",
   secondary:
     "bg-white text-ink-900 border border-ink-200 hover:bg-ink-50 hover:border-ink-300 active:bg-ink-100 focus-visible:outline-brand-600",
   ghost: "text-ink-700 hover:bg-ink-100 hover:text-ink-900 focus-visible:outline-brand-600",
   danger: "bg-danger-700 text-white hover:bg-danger-600 focus-visible:outline-danger-700",
   dark: "bg-white text-ink-950 hover:bg-ink-100 focus-visible:outline-white",
+  glow: "bg-linear-to-b from-brand-500 to-brand-600 text-white shadow-[0_0_0_1px_rgb(96_165_250/0.5),0_8px_32px_-4px_rgb(59_130_246/0.7)] hover:from-brand-400 hover:to-brand-500 focus-visible:outline-white",
+  glass: "border border-white/15 bg-white/[0.06] text-white backdrop-blur hover:bg-white/[0.12] focus-visible:outline-white",
 };
 
 const sizes: Record<Size, string> = {
   sm: "h-8 px-3 text-sm",
-  md: "h-10 px-4 text-sm",
-  lg: "h-12 px-5 text-base",
+  md: "h-10 px-4.5 text-sm",
+  lg: "h-12 px-6 text-base",
 };
 
 export function buttonClasses({

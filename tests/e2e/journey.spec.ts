@@ -127,7 +127,7 @@ test("register, onboard and report a problem with evidence", async ({ page }) =>
   await expect(page).toHaveURL(/\/dashboard/);
   await expect(page.getByText(/You have 1 unfinished report/)).toBeVisible();
   await page.getByRole("link", { name: "Continue where you left off" }).click();
-  await page.getByRole("link", { name: /RSV-.*Unfinished report/ }).click();
+  await page.getByRole("row", { name: /Unfinished report/ }).getByRole("link").click();
   // Resumes at the first unfinished step (evidence).
   await expect(page.getByRole("heading", { name: "Add supporting evidence" })).toBeVisible();
 
@@ -264,6 +264,38 @@ test("tracking: submission, response, follow-up, resolution and timeline", async
   await expect(tile("Total cases")).toContainText("1");
   await expect(tile("Resolved")).toContainText("1");
   await expect(tile("Awaiting institution")).toContainText("0");
+
+  // Search from the top bar, then narrow with the filter popover.
+  await page.getByRole("searchbox", { name: "Search your cases" }).fill("Zenith");
+  await page.getByRole("searchbox", { name: "Search your cases" }).press("Enter");
+  await expect(page).toHaveURL(/\/cases\?q=Zenith/);
+  await expect(page.getByText(/Results for “Zenith” · 1 case/)).toBeVisible();
+  await page.getByRole("searchbox", { name: "Search cases" }).fill("no-such-bank");
+  await page.getByRole("searchbox", { name: "Search cases" }).press("Enter");
+  await expect(page.getByText("No cases match these filters")).toBeVisible();
+  await page.getByRole("button", { name: "Reset" }).click();
+  await expect(page).toHaveURL(/\/cases$/);
+
+  await page.getByRole("button", { name: /^Filter/ }).click();
+  const dialog = page.getByRole("dialog", { name: "Filter cases" });
+  await dialog.getByRole("checkbox", { name: "Closed" }).check();
+  await dialog.getByRole("button", { name: "Apply" }).click();
+  await expect(page).toHaveURL(/status=closed/);
+  await expect(page.getByText("No cases match these filters")).toBeVisible();
+
+  await page.getByRole("button", { name: /^Filter/ }).click();
+  await dialog.getByRole("button", { name: /Clear/ }).click();
+  await dialog.getByRole("checkbox", { name: "Resolved" }).check();
+  await dialog.getByRole("tab", { name: "Category" }).click();
+  await dialog.getByRole("checkbox", { name: "Failed or pending transfer" }).check();
+  await dialog.getByRole("button", { name: "Apply" }).click();
+  await expect(page).toHaveURL(/status=resolved/);
+  await expect(page.getByRole("row", { name: /Zenith Bank/ })).toBeVisible();
+
+  await page.getByRole("button", { name: "Show" }).click();
+  await page.getByRole("option", { name: "Unfinished reports" }).click();
+  await expect(page).toHaveURL(/filter=unfinished/);
+  await expect(page.getByText("No cases match these filters")).toBeVisible();
 });
 
 test("data isolation between users", async ({ browser }) => {

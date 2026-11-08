@@ -4,10 +4,13 @@ import { Logo } from "@/components/logo";
 export default function AuthLayout({ children }: { children: React.ReactNode }) {
   return (
     <div className="grid min-h-screen lg:grid-cols-[minmax(0,1fr)_minmax(0,1.1fr)]">
-      <aside className="relative hidden flex-col justify-between overflow-hidden bg-ink-950 p-10 text-white lg:flex">
+      <aside className="relative isolate hidden flex-col justify-between overflow-hidden bg-night-950 p-10 text-white lg:flex">
+        <div className="star-field absolute inset-0 -z-10 bg-[length:420px_360px]" aria-hidden="true" />
+        <div className="light-beam -left-[30%] -z-10 w-[90%]! origin-top-left -rotate-[24deg] [clip-path:polygon(18%_0,46%_0,100%_100%,28%_100%)]" aria-hidden="true" />
+        <div className="horizon -z-10 top-[72%] h-[1100px]! w-[1100px]!" aria-hidden="true" />
         <Logo tone="light" />
         <div className="relative max-w-md space-y-6">
-          <p className="text-3xl leading-tight font-semibold">Understand what happened. Know what to do next.</p>
+          <p className="text-4xl leading-tight font-light tracking-tight">Understand what happened. Know what to do next.</p>
           <ul className="space-y-3 text-sm text-ink-300">
             <li className="flex gap-3"><Dot /> Organise your evidence in one private place</li>
             <li className="flex gap-3"><Dot /> Get a clear, careful analysis of your case</li>
