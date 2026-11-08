@@ -20,8 +20,22 @@ export class AnthropicProvider implements AIProvider {
   private effort: Effort;
   private useFallbacks: boolean;
 
-  constructor(opts: { apiKey: string; model: string; effort: Effort; useFallbacks: boolean; timeoutMs: number }) {
-    this.client = new Anthropic({ apiKey: opts.apiKey, timeout: opts.timeoutMs, maxRetries: 1 });
+  constructor(opts: {
+    apiKey: string;
+    model: string;
+    effort: Effort;
+    useFallbacks: boolean;
+    timeoutMs: number;
+    /** For tests only: a custom fetch implementation. */
+    fetch?: typeof fetch;
+    maxRetries?: number;
+  }) {
+    this.client = new Anthropic({
+      apiKey: opts.apiKey,
+      timeout: opts.timeoutMs,
+      maxRetries: opts.maxRetries ?? 1,
+      ...(opts.fetch ? { fetch: opts.fetch } : {}),
+    });
     this.model = opts.model;
     this.effort = opts.effort;
     this.useFallbacks = opts.useFallbacks;

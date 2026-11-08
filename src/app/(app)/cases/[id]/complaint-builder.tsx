@@ -120,7 +120,7 @@ function CopyButton({ text, label }: { text: string; label: string }) {
 function DraftEditor({ caseId, draft, warnings }: { caseId: string; draft: ComplaintDraftRow; warnings: string[] }) {
   const save = useFormAction(saveComplaintAction);
   const approve = useFormAction(approveComplaintAction);
-  // The parent remounts this component (via `key`) whenever the saved draft changes.
+  // The parent remounts this component (via `key`) when a new draft version is created.
   const [subject, setSubject] = useState(draft.subject);
   const [content, setContent] = useState(draft.content);
 
@@ -233,7 +233,7 @@ export function ComplaintBuilder({
         </Card>
       ) : (
         <>
-          <DraftEditor key={`${current.id}-${current.updated_at}`} caseId={caseId} draft={current} warnings={warnings} />
+          <DraftEditor key={current.id} caseId={caseId} draft={current} warnings={warnings} />
           <Card>
             <CardHeader title="Start again" description="Create a new version from your latest case details. Your current draft stays in the history." />
             <CardBody>

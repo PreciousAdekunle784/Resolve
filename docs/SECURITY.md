@@ -1,0 +1,48 @@
+# Security and privacy design
+
+This document explains how Resolve protects user data and where the limits are.
+
+## Threat model (summary)
+
+| Risk | Protection |
+| --- | --- |
+| A user reads or changes another user's cases, evidence, analyses, drafts or history | Row Level Security (RLS) on every table (`user_id = auth.uid()`). Child tables also check case ownership through `owns_case()`. Server code filters by `user_id` too (defence in depth). Covered by `tests/db/rls.test.ts` and the E2E isolation test |
+| Private evidence is exposed | `evidence` bucket is private, so there are no public URLs. Storage policies only allow `<user_id>/<case_id>/…` paths for the owner and that user's own cases. Viewing uses 5-minute signed URLs |
+| Malicious or disguised uploads | Declared type, extension and size are checked before an upload URL is issued. After upload, the server reads the file's magic bytes, rejects anything that isn't a real PNG/JPEG/PDF and deletes it. The bucket also enforces the size and MIME limits. There is a maximum of 10 files per case (database trigger) |
+| Case history is rewritten | `case_events` has no UPDATE/DELETE grants or policies, so it is append-only. Status changes are logged by a database trigger |
+| Ownership or case number tampering | Trigger blocks changes to `user_id`, `case_number`, `created_at`. Users can't edit `profiles.email` (column grants) |
+| Fake "official" guidance | Only admins (`app_metadata.role = 'admin'`, settable only with the service key) can write guidance. A verified record needs a verification date (CHECK constraint) |
+| Secrets leak to the browser | Only `NEXT_PUBLIC_*` values reach the browser (URL + publishable key, protected by RLS). The secret key is only used in `src/lib/supabase/admin.ts` (marked `server-only`) for account deletion. The AI key is only used in `src/lib/ai/` (server-only) |
+| AI abuse / cost | Per-user limits (10/hour by default, 3/minute) enforced atomically in the database (`consume_ai_quota`). Consent is required. Inputs are bounded (10 files, 10 MB each, text length limits) |
+| Prompt injection via descriptions or documents | User content is wrapped in `<case_data>`/`<document>` tags and the system prompt says to treat it as data. Output is schema-constrained, then grounding-checked: facts not found in the user's input or in document text are marked *Unverified*, and unknown guidance IDs are removed |
+| AI fabrication in complaints | Complaints are generated only from confirmed case facts. Missing details become `[ADD: …]` placeholders, and drafts can't be approved while any remain. References and amounts not found in the case facts are flagged before approval. The user must approve every draft |
+| Open redirects | `next` parameters must be same-site relative paths (`safeNextPath`) |
+| Cross-site requests to JSON APIs | Same-origin `Origin` check on state-changing API routes, on top of SameSite auth cookies. Server actions have Next.js's built-in origin protection |
+| Clickjacking / sniffing | `X-Frame-Options: DENY`, `X-Content-Type-Options: nosniff`, HSTS, strict referrer policy, restrictive Permissions-Policy |
+| Account enumeration | Password reset always shows the same message. Sign-up relies on Supabase's identical responses |
+
+## Data minimisation
+
+- Resolve never asks for BVN, NIN, PINs, OTPs, internet banking passwords or full card numbers.
+- Free-text fields reject text that looks like a PIN/OTP/password disclosure, a BVN/NIN, or a Luhn-valid card number. Reference fields accept long numeric session IDs.
+- Users are told to cover sensitive details before uploading documents. The AI flags when it sees them.
+- AI usage rows are kept for 2 days (rate limiting only).
+
+## User rights
+
+- **Export:** Settings → *Download my data* (JSON of profile, cases, history, analyses, drafts and file list).
+- **Correction:** every profile and case field can be edited. Changes are logged.
+- **Deletion:** delete a case (removes its files and records), or delete the account. Account deletion removes every storage object in the user's folder, then deletes the auth user, which cascades to all rows.
+- **AI consent:** opt in at onboarding or in Settings. Withdraw at any time.
+
+## AI provider
+
+Case details and evidence are sent to Anthropic only when the user has consented and asks for an analysis or AI draft. Resolve does not use user data to train models. Check the provider's current data-handling terms and complete a transfer-impact assessment for cross-border processing under the NDPA before launch.
+
+## Known limitations / before launch
+
+- No legal review yet. The privacy notice and terms are drafts.
+- Email confirmation and password reset use Supabase's mailer. Configure a production SMTP provider.
+- An interrupted upload (file uploaded, but the browser closed before it was verified) leaves an orphan object in the user's private folder. It is not accessible to others and is removed when the account is deleted. A scheduled cleanup job is a recommended next step.
+- Consider adding a Content Security Policy once the final domains are known.
+- Rate limiting covers AI endpoints. Supabase applies its own limits to auth endpoints.

@@ -25,8 +25,14 @@ import {
 const today = () => new Intl.DateTimeFormat("en-CA", { timeZone: "Africa/Lagos" }).format(new Date());
 
 function Panel({ title, description, children, defaultOpen = false }: { title: string; description: string; children: React.ReactNode; defaultOpen?: boolean }) {
+  // Keep the open/closed state local so a panel doesn't collapse when the case refreshes.
+  const [open, setOpen] = useState(defaultOpen);
   return (
-    <details className="group rounded-[var(--radius-card)] border border-ink-200 bg-white" open={defaultOpen}>
+    <details
+      className="group rounded-[var(--radius-card)] border border-ink-200 bg-white"
+      open={open}
+      onToggle={(e) => setOpen((e.currentTarget as HTMLDetailsElement).open)}
+    >
       <summary className="flex cursor-pointer list-none items-center justify-between gap-3 px-5 py-4 [&::-webkit-details-marker]:hidden">
         <span>
           <span className="block font-semibold text-ink-900">{title}</span>

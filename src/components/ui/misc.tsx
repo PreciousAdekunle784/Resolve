@@ -62,7 +62,7 @@ export function DescriptionList({ items }: { items: { label: ReactNode; value: R
       {items.map((item, i) => (
         <div key={i} className="min-w-0">
           <dt className="text-xs font-medium text-ink-500">{item.label}</dt>
-          <dd className={clsx("mt-0.5 text-sm break-words text-ink-900", item.mono && "font-mono")}>
+          <dd className={clsx("mt-0.5 text-sm break-words text-ink-900", item.mono && item.value && "font-mono")}>
             {item.value ?? <span className="text-ink-400">Not provided</span>}
           </dd>
         </div>

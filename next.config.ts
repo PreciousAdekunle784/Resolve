@@ -13,6 +13,8 @@ const nextConfig: NextConfig = {
   // user), so it uses the classic dynamic rendering model rather than
   // Cache Components.
   cacheComponents: false,
+  // Lets the end-to-end tests build into a separate folder.
+  distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
   turbopack: {
     rules: {
