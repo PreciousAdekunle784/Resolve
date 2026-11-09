@@ -68,12 +68,9 @@ npm install
 ### 3. Create a Supabase project (free)
 
 1. Sign up at [supabase.com](https://supabase.com) and click **New project**. Choose a region close to your users and save the database password somewhere safe.
-2. When the project is ready, open **SQL Editor → New query**. Paste in the contents of each file below, in this order, and click **Run** after each one:
-   1. `supabase/migrations/20261108000001_initial_schema.sql`
-   2. `supabase/migrations/20261108000002_evidence_storage.sql`
-   3. `supabase/migrations/20261108000003_guidance_seed.sql`
+2. When the project is ready, open **SQL Editor → New query**. Paste in the whole of `supabase/setup.sql` and click **Run**. Run it once only, on a new project. It contains the three files in `supabase/migrations/`, in order.
 
-   *(If you use the Supabase CLI instead, `supabase link` then `supabase db push` applies the same files.)*
+   *(If you use the Supabase CLI instead, `supabase link` then `supabase db push` applies the same migration files.)*
 3. Open **Authentication → URL Configuration**:
    - **Site URL**: `http://localhost:3000` (change this to your real domain when you deploy)
    - **Redirect URLs**: add `http://localhost:3000/auth/confirm` (and later `https://your-domain/auth/confirm`)
