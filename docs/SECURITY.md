@@ -37,7 +37,12 @@ This document explains how Resolve protects user data and where the limits are.
 
 ## AI provider
 
-Case details and evidence are sent to Anthropic only when the user has consented and asks for an analysis or AI draft. Resolve does not use user data to train models. Check the provider's current data-handling terms and complete a transfer-impact assessment for cross-border processing under the NDPA before launch.
+Case details and evidence are sent to the configured AI provider only when the user has consented and asks for an analysis or AI draft. Resolve itself does not use user data to train models.
+
+- **Anthropic** (`AI_PROVIDER=anthropic`): not used for training under Anthropic's commercial terms.
+- **Google Gemini free tier** (`AI_PROVIDER=gemini`): Google's terms allow free-tier content to be used to improve its products, and human reviewers may read it. The consent text at onboarding, in Settings and in the privacy notice says this automatically (`src/lib/ai/provider-info.ts`). Use the free tier for demos and testing with non-sensitive data. For real users, enable billing (then set `GEMINI_PAID_TIER=true`) or use a provider whose terms exclude training.
+
+Check the provider's current data-handling terms and complete a transfer-impact assessment for cross-border processing under the NDPA before launch.
 
 ## Known limitations / before launch
 

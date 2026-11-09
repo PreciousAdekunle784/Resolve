@@ -45,10 +45,10 @@ export default defineConfig({
         NEXT_PUBLIC_SUPABASE_URL: BACKEND,
         NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ANON_KEY,
         SUPABASE_SECRET_KEY: SERVICE_KEY,
-        AI_PROVIDER: "anthropic",
-        ANTHROPIC_API_KEY: "test-key-for-local-mock",
-        ANTHROPIC_BASE_URL: BACKEND,
-        AI_MODEL: "claude-opus-5-5",
+        // Run the suite against either provider: E2E_AI_PROVIDER=gemini npm run e2e
+        ...(process.env.E2E_AI_PROVIDER === "gemini"
+          ? { AI_PROVIDER: "gemini", GEMINI_API_KEY: "test-key-for-local-mock", GEMINI_BASE_URL: BACKEND, AI_MODEL: "gemini-test-flash" }
+          : { AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key-for-local-mock", ANTHROPIC_BASE_URL: BACKEND, AI_MODEL: "claude-opus-5-5" }),
         AI_RATE_LIMIT_PER_HOUR: "50",
         NEXT_TELEMETRY_DISABLED: "1",
       },

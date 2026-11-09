@@ -532,11 +532,8 @@ async function serveFile(pool, res, bucket, name, download) {
 // ---------------------------------------------------------------------------
 const MOCK_REFERENCE = "NIP-E2E-REF-0001";
 const aiRequests = [];
-function handleAnthropic(req, res, body) {
-  const json = JSON.parse(body.toString() || "{}");
-  aiRequests.push({ at: Date.now(), hasFormat: Boolean(json.output_config?.format), model: json.model, apiKey: Boolean(req.headers["x-api-key"]) });
-  const system = Array.isArray(json.system) ? json.system.map((s) => s.text).join("\n") : String(json.system ?? "");
-  const userText = (json.messages?.[0]?.content ?? []).filter((c) => c.type === "text").map((c) => c.text).join("\n");
+/** Deterministic, schema-valid result for each AI task (shared by both provider mocks). */
+function fakeTaskResult(system, userText) {
   let result;
   if (system.includes("You read one piece of evidence")) {
     result = {
@@ -580,8 +577,18 @@ function handleAnthropic(req, res, body) {
       missing_placeholders: ["transaction reference"],
     };
   } else {
-    return send(res, 400, { type: "error", error: { type: "invalid_request_error", message: "Unknown task in mock" } });
+    return null;
   }
+  return result;
+}
+
+function handleAnthropic(req, res, body) {
+  const json = JSON.parse(body.toString() || "{}");
+  aiRequests.push({ provider: "anthropic", at: Date.now(), hasFormat: Boolean(json.output_config?.format), model: json.model, apiKey: Boolean(req.headers["x-api-key"]) });
+  const system = Array.isArray(json.system) ? json.system.map((s) => s.text).join("\n") : String(json.system ?? "");
+  const userText = (json.messages?.[0]?.content ?? []).filter((c) => c.type === "text").map((c) => c.text).join("\n");
+  const result = fakeTaskResult(system, userText);
+  if (!result) return send(res, 400, { type: "error", error: { type: "invalid_request_error", message: "Unknown task in mock" } });
   return send(res, 200, {
     id: `msg_${randomUUID()}`,
     type: "message",
@@ -591,6 +598,27 @@ function handleAnthropic(req, res, body) {
     stop_reason: "end_turn",
     stop_sequence: null,
     usage: { input_tokens: 10, output_tokens: 10 },
+  });
+}
+
+
+function handleGemini(req, res, body, url) {
+  const json = JSON.parse(body.toString() || "{}");
+  aiRequests.push({
+    provider: "gemini",
+    at: Date.now(),
+    hasFormat: Boolean(json.generationConfig?.responseJsonSchema || json.generationConfig?.responseSchema),
+    model: decodeURIComponent(url.pathname.split("/models/")[1] ?? "").split(":")[0],
+    apiKey: Boolean(req.headers["x-goog-api-key"] || url.searchParams.get("key")),
+  });
+  const system = (json.systemInstruction?.parts ?? []).map((p) => p.text ?? "").join("\n");
+  const userText = (json.contents ?? []).flatMap((c) => c.parts ?? []).filter((p) => typeof p.text === "string").map((p) => p.text).join("\n");
+  const result = fakeTaskResult(system, userText);
+  if (!result) return send(res, 400, { error: { code: 400, message: "Unknown task in mock", status: "INVALID_ARGUMENT" } });
+  return send(res, 200, {
+    candidates: [{ content: { role: "model", parts: [{ text: JSON.stringify(result) }] }, finishReason: "STOP", index: 0 }],
+    modelVersion: "mock-gemini-e2e",
+    usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 10, totalTokenCount: 20 },
   });
 }
 
@@ -618,6 +646,7 @@ http
       if (url.pathname.startsWith("/rest/v1")) return await handleRest(pool, req, res, url, body);
       if (url.pathname.startsWith("/storage/v1")) return await handleStorage(pool, req, res, url, body);
       if (url.pathname.startsWith("/v1/messages")) return handleAnthropic(req, res, body);
+      if (/^\/v1(beta|alpha)?\/models\/[^/]+:generateContent$/.test(url.pathname)) return handleGemini(req, res, body, url);
       return send(res, 404, { message: "not found" });
     } catch (e) {
       console.error("[mock]", e);

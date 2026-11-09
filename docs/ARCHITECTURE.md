@@ -27,6 +27,8 @@ All data access uses the signed-in user's own session, so Row Level Security is 
 
 - `provider.ts`: the provider-neutral interface (`generateStructured(system, content, zodSchema)`).
 - `anthropic.ts`: the Claude implementation (structured outputs via `betaZodOutputFormat`, server-side refusal fallback, error mapping, a second Zod validation).
+- `gemini.ts`: the Google Gemini implementation (JSON output with the task's JSON Schema, plus a plain-JSON retry if the schema is rejected; images and PDFs sent inline; error mapping; Zod validation).
+- `provider-info.ts`: describes the active provider so consent text accurately says where data goes.
 - `schemas.ts`: Zod schemas for evidence extraction, case analysis and complaint drafts.
 - `prompts.ts`: system prompts encoding the responsible-AI rules.
 - `grounding.ts`: deterministic checks applied to every result before it is saved.
@@ -42,7 +44,7 @@ Case analysis steps:
 
 If AI is unavailable (no key, no consent, rate limit, provider error or timeout), the user sees a clear message with a retry option. Nothing they entered is lost, and the template complaint works without AI.
 
-To switch AI providers, implement `AIProvider` and select it in `getAIProvider()` (`AI_PROVIDER`).
+To switch AI providers, set `AI_PROVIDER` (`gemini` or `anthropic`). To add another, implement `AIProvider` and select it in `getAIProvider()`.
 
 ## Case lifecycle
 

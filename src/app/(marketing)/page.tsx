@@ -49,7 +49,7 @@ const faqs = [
   },
   {
     q: "How does the AI use my information?",
-    a: "Only if you give permission. When you request an analysis, your case details and evidence are sent to our AI provider to produce the analysis. Resolve does not use your data to train AI models. You can withdraw permission at any time in Settings, and the rest of Resolve keeps working without AI.",
+    a: "Only if you give permission. When you request an analysis, your case details and evidence are sent to our AI provider to produce it. Before you opt in, Resolve tells you which provider is used and whether that provider may use submitted content to improve its own services. Resolve itself does not use your data to train AI models. You can withdraw permission at any time in Settings, and the rest of Resolve keeps working without AI.",
   },
   {
     q: "What if the AI gets something wrong?",

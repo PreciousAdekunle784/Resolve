@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import { ProsePage } from "@/components/marketing/prose-page";
 import { Alert } from "@/components/ui/alert";
+import { aiDataUseNotice, getAIProviderInfo } from "@/lib/ai/provider-info";
 
 export const metadata: Metadata = { title: "Privacy notice" };
 
 export default function PrivacyPage() {
+  const ai = getAIProviderInfo();
   return (
     <ProsePage
       title="Privacy notice"
@@ -41,10 +43,10 @@ export default function PrivacyPage() {
       <h2>AI processing</h2>
       <p>
         When you request an AI analysis or AI-generated complaint draft, the relevant case details and evidence are
-        sent to our AI provider (Anthropic) for processing, which may happen outside Nigeria. We only do this after
-        you opt in. Resolve does not use your data to train AI models. Without permission, you can still use Resolve
-        manually, including a template-based complaint draft.
+        sent to our AI provider ({ai.company}) for processing, which may happen outside Nigeria. We only do this after
+        you opt in, and you can still use Resolve manually without AI, including a template-based complaint draft.
       </p>
+      <p>{aiDataUseNotice(ai)}</p>
 
       <h2>How your data is protected</h2>
       <ul>

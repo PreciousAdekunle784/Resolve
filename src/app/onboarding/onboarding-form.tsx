@@ -9,7 +9,7 @@ import { Checkbox, FieldError } from "@/components/ui/field";
 import type { Profile } from "@/lib/types";
 import { completeOnboardingAction } from "./actions";
 
-export function OnboardingForm({ profile, next }: { profile: Profile; next?: string }) {
+export function OnboardingForm({ profile, next, aiNotice }: { profile: Profile; next?: string; aiNotice: string }) {
   const { state, pending, onSubmit } = useFormAction(completeOnboardingAction);
   return (
     <form onSubmit={onSubmit} className="space-y-8" noValidate>
@@ -24,8 +24,7 @@ export function OnboardingForm({ profile, next }: { profile: Profile; next?: str
           <span>
             <span className="font-medium text-ink-900">Allow AI analysis (optional).</span> When I ask for an analysis
             or AI-written complaint, Resolve may send my case details and evidence to its AI provider for processing,
-            which may take place outside Nigeria. Resolve does not use my data to train AI models. I can withdraw this
-            at any time in Settings.
+            which may take place outside Nigeria. {aiNotice} I can withdraw this at any time in Settings.
           </span>
         </label>
         <div className="space-y-1">

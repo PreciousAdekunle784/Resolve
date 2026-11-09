@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { redirect } from "next/navigation";
 import { Logo } from "@/components/logo";
 import { Alert } from "@/components/ui/alert";
+import { aiDataUseNotice, getAIProviderInfo } from "@/lib/ai/provider-info";
 import { getProfile, requireUser } from "@/lib/auth";
 import { SENSITIVE_DATA_WARNING } from "@/lib/constants";
 import { OnboardingForm } from "./onboarding-form";
@@ -38,7 +39,7 @@ export default async function OnboardingPage({ searchParams }: PageProps<"/onboa
           We only ask for what&apos;s needed to prepare your complaints. {SENSITIVE_DATA_WARNING}
         </p>
         <div className="mt-8 rounded-[var(--radius-card)] border border-ink-200 bg-white p-5 shadow-[var(--shadow-card)] sm:p-8">
-          <OnboardingForm profile={profile} next={typeof sp.next === "string" ? sp.next : undefined} />
+          <OnboardingForm profile={profile} next={typeof sp.next === "string" ? sp.next : undefined} aiNotice={aiDataUseNotice(getAIProviderInfo())} />
         </div>
       </main>
     </div>

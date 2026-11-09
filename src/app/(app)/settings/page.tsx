@@ -3,6 +3,7 @@ import { Alert } from "@/components/ui/alert";
 import { buttonClasses } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/misc";
+import { aiDataUseNotice, getAIProviderInfo } from "@/lib/ai/provider-info";
 import { requireOnboardedUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
 import { isAdminClientConfigured } from "@/lib/supabase/admin";
@@ -30,7 +31,7 @@ export default async function SettingsPage() {
               : "AI analysis is currently turned off."
           }
         />
-        <CardBody><PrivacyForm profile={profile} /></CardBody>
+        <CardBody><PrivacyForm profile={profile} aiNotice={aiDataUseNotice(getAIProviderInfo())} /></CardBody>
       </Card>
 
       <Card id="notifications">

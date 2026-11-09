@@ -36,7 +36,7 @@ Resolve is an AI-powered financial recovery assistant for people and small busin
 
 - **Next.js 16** (App Router) + **TypeScript** + **Tailwind CSS v4**
 - **Supabase**: PostgreSQL, Auth, Storage, Row Level Security
-- **Anthropic Claude** for AI (behind a replaceable provider interface in `src/lib/ai/`)
+- **Google Gemini** (free tier) or **Anthropic Claude** for AI, behind a replaceable provider interface in `src/lib/ai/`
 - **Zod** for all input validation and for structured AI outputs
 - **pdf-lib** for PDF export
 - **Vitest** (unit + database security tests) and **Playwright** (end-to-end tests)
@@ -87,9 +87,30 @@ npm install
    - the **publishable key** (`sb_publishable_…`, or the legacy *anon* key)
    - the **secret key** (`sb_secret_…`, or the legacy *service_role* key). Keep this one private.
 
-### 4. Get an AI key (optional but recommended)
+### 4. Get an AI key (optional, and free with Gemini)
 
-Create an API key at [console.anthropic.com](https://console.anthropic.com) (Settings → API keys). Without a key, Resolve still works: AI buttons explain that AI isn't available, and users can create complaints from the template.
+Resolve supports two AI providers. Choose one with `AI_PROVIDER`:
+
+| | Google Gemini (`gemini`) | Anthropic Claude (`anthropic`) |
+| --- | --- | --- |
+| Cost | **Free tier, no card needed** | Paid |
+| Get a key | [aistudio.google.com](https://aistudio.google.com) → *Get API key* | [console.anthropic.com](https://console.anthropic.com) |
+| Variable | `GEMINI_API_KEY` | `ANTHROPIC_API_KEY` |
+| Data use | On the free tier, Google may use submitted content to improve its products, and people may review it | Not used for training under Anthropic's commercial terms |
+
+**For a competition or demo, the free Gemini key is enough:**
+
+1. Go to [aistudio.google.com](https://aistudio.google.com) and sign in with a Google account.
+2. Click **Get API key → Create API key**, and copy it.
+3. In `.env.local`, set `AI_PROVIDER=gemini` and `GEMINI_API_KEY=<your key>`.
+4. Optional: set `AI_MODEL` to a "Flash" model code shown in AI Studio. If it's empty, the `gemini-flash-latest` alias is used. If the name isn't recognised, the AI buttons say AI isn't set up and the server log explains why.
+
+Things to know about the free tier:
+- **Use test data, not real people's documents.** Resolve shows users a notice about Google's free-tier data use before they opt in. It appears at onboarding, in Settings and in the privacy notice.
+- The free quota is small (a few requests per minute) and shared by all users of your app. If it runs out, users see "The AI service is busy right now. Please try again in a minute."
+- Never put the key in code or share it. Never use keys found online. They belong to someone else's account and get revoked.
+
+Without any AI key, Resolve still works: AI buttons explain that AI isn't available, and users can build complaints from the template.
 
 ### 5. Add your settings
 
@@ -144,7 +165,7 @@ Sign out and back in. An **Admin: guidance** link appears in the sidebar.
 | `npm run typecheck` | TypeScript types |
 | `npm test` | Unit tests: validation, sensitive-data detection, file checks, AI response validation, grounding, complaint template, PDF export. Also runs the database tests below if `TEST_DATABASE_URL` is set |
 | `npm run test:db` | **Database security tests** against a real PostgreSQL with the real migrations: users can only access their own profiles, cases, events, evidence, analyses and drafts; storage folders are private; history can't be edited; guidance is admin-only; rate limits; account deletion removes everything |
-| `npm run e2e` | **End-to-end tests** in a real browser: the full journey from landing page to resolved case, data isolation between two users, admin guidance, settings, account deletion and mobile layouts |
+| `npm run e2e` | **End-to-end tests** in a real browser: the full journey from landing page to resolved case, data isolation between two users, admin guidance, settings, account deletion and mobile layouts. `E2E_AI_PROVIDER=gemini npm run e2e` runs it with the Gemini provider |
 
 The database and end-to-end tests need a local PostgreSQL superuser connection:
 

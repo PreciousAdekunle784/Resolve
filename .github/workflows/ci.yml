@@ -41,5 +41,9 @@ jobs:
         run: npm run build
       - name: Install Playwright browser
         run: npx playwright install --with-deps chromium
-      - name: End-to-end tests
+      - name: End-to-end tests (Anthropic provider)
         run: npm run e2e
+      - name: End-to-end tests (Gemini provider)
+        run: npm run e2e
+        env:
+          E2E_AI_PROVIDER: gemini

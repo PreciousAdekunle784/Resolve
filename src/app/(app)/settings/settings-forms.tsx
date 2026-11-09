@@ -19,7 +19,7 @@ export function ProfileForm({ profile }: { profile: Profile }) {
   );
 }
 
-export function PrivacyForm({ profile }: { profile: Profile }) {
+export function PrivacyForm({ profile, aiNotice }: { profile: Profile; aiNotice: string }) {
   const { state, pending, onSubmit } = useFormAction(updatePrivacyAction);
   return (
     <form onSubmit={onSubmit} className="space-y-4">
@@ -28,9 +28,9 @@ export function PrivacyForm({ profile }: { profile: Profile }) {
         <Checkbox name="aiConsent" defaultChecked={profile.ai_processing_consent} />
         <span>
           <span className="font-medium text-ink-900">Allow AI analysis.</span> When you ask for an analysis or an
-          AI-written complaint, Resolve sends the case details and evidence to its AI provider (Anthropic) for
-          processing, which may happen outside Nigeria. Resolve does not use your data to train AI models. Turning this
-          off stops any new AI processing; Resolve keeps working without it.
+          AI-written complaint, Resolve sends the case details and evidence to its AI provider for processing, which
+          may happen outside Nigeria. {aiNotice} Turning this off stops any new AI processing; Resolve keeps working
+          without it.
         </span>
       </label>
       <Button type="submit" loading={pending}>Save privacy choice</Button>
