@@ -12,6 +12,11 @@ const discoveredModels = new Map<string, string>();
  * stable before preview, full Flash before Flash-Lite, newest version first.
  */
 export function pickFlashModel(models: { name?: string; supportedActions?: string[] }[]): string | null {
+  return rankFlashModels(models)[0] ?? null;
+}
+
+/** All usable Flash models, best first. */
+export function rankFlashModels(models: { name?: string; supportedActions?: string[] }[]): string[] {
   const names = models
     .filter((m) => m.name && (!m.supportedActions || m.supportedActions.includes("generateContent")))
     .map((m) => m.name!.replace(/^models\//, ""))
@@ -21,7 +26,7 @@ export function pickFlashModel(models: { name?: string; supportedActions?: strin
   const unstable = (n: string) => (/(preview|exp)/i.test(n) ? 1 : 0);
   const lite = (n: string) => (/lite/i.test(n) ? 1 : 0);
   names.sort((a, b) => unstable(a) - unstable(b) || lite(a) - lite(b) || version(b) - version(a) || a.length - b.length);
-  return names[0] ?? null;
+  return Array.from(new Set(names));
 }
 
 /**
@@ -37,7 +42,12 @@ export class GeminiProvider implements AIProvider {
   constructor(opts: { apiKey: string; model: string; timeoutMs: number; baseUrl?: string }) {
     this.client = new GoogleGenAI({
       apiKey: opts.apiKey,
-      httpOptions: { timeout: opts.timeoutMs, ...(opts.baseUrl ? { baseUrl: opts.baseUrl } : {}) },
+      httpOptions: {
+        timeout: opts.timeoutMs,
+        // Report quota/rate limits straight away instead of silently retrying for minutes.
+        retryOptions: { attempts: 2, initialDelay: 1, maxDelay: 4, httpStatusCodes: [500, 502, 503, 504] },
+        ...(opts.baseUrl ? { baseUrl: opts.baseUrl } : {}),
+      },
     });
     this.model = opts.model;
   }
@@ -48,29 +58,37 @@ export class GeminiProvider implements AIProvider {
     try {
       return await this.generateWithSchema(request);
     } catch (error) {
-      if (error instanceof AIError && error.code === "model_unavailable" && !discoveredModels.has(configured)) {
-        const replacement = await this.discoverModel();
-        if (replacement && replacement !== this.model) {
-          console.warn(`[ai] Gemini model "${configured}" not found; using "${replacement}" instead. Set AI_MODEL to choose a model.`);
-          discoveredModels.set(configured, replacement);
-          this.model = replacement;
-          return this.generateWithSchema(request);
+      if (!(error instanceof AIError && error.code === "model_unavailable") || discoveredModels.has(configured)) throw error;
+      // The configured model doesn't exist or has no free quota: try the best available Flash models.
+      const tried = new Set([this.model]);
+      const candidates = (await this.listFlashModels()).filter((m) => !tried.has(m)).slice(0, 3);
+      let lastError: unknown = error;
+      for (const candidate of candidates) {
+        this.model = candidate;
+        try {
+          const result = await this.generateWithSchema(request);
+          console.warn(`[ai] Gemini model "${configured}" unavailable; using "${candidate}" instead. Set AI_MODEL to choose a model.`);
+          discoveredModels.set(configured, candidate);
+          return result;
+        } catch (e) {
+          lastError = e;
+          if (!(e instanceof AIError && e.code === "model_unavailable")) throw e;
         }
       }
-      throw error;
+      throw lastError;
     }
   }
 
-  /** Asks Google which models this API key can use and picks the best Flash model. */
-  private async discoverModel(): Promise<string | null> {
+  /** Asks Google which models this API key can use, best Flash models first. */
+  private async listFlashModels(): Promise<string[]> {
     try {
       const pager = await this.client.models.list({ config: { pageSize: 200, queryBase: true } });
       const models: { name?: string; supportedActions?: string[] }[] = [];
       for await (const m of pager) models.push(m);
-      return pickFlashModel(models);
+      return rankFlashModels(models);
     } catch (e) {
       console.error("[ai] Could not list Gemini models:", e instanceof ApiError ? e.status : e instanceof Error ? e.name : typeof e);
-      return null;
+      return [];
     }
   }
 
@@ -171,7 +189,14 @@ function mapError(error: unknown): AIError {
   if (error instanceof AIError) return error;
   if (error instanceof ApiError) {
     const msg = String(error.message ?? "").toLowerCase();
-    if (error.status === 429) return new AIError("provider_rate_limited");
+    if (error.status === 429) {
+      // "limit: 0" means this model has no free-tier quota at all (paid only).
+      if (/limit:\s*0\b/.test(msg)) {
+        console.error("[ai] Gemini model has no free-tier quota for this key.");
+        return new AIError("model_unavailable");
+      }
+      return new AIError("provider_rate_limited");
+    }
     if (error.status === 401 || error.status === 403 || msg.includes("api key not valid") || msg.includes("api_key_invalid")) {
       console.error("[ai] Gemini rejected the API key — check GEMINI_API_KEY.");
       return new AIError("provider_auth_failed");

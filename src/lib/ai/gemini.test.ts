@@ -139,8 +139,44 @@ describe("automatic model discovery", () => {
     expect(result.data).toEqual(valid);
     expect(requests.map((r) => r.url).join(" ")).toContain("gemini-7.0-flash:generateContent");
     // Remembered for next time: no second lookup.
+    // (uses the cached replacement model)
     requests.length = 0;
     await provider("unknown-model").generateStructured(request);
     expect(requests).toHaveLength(1);
+  });
+});
+
+describe("quota handling", () => {
+  it("skips models with no free quota and remembers the one that works", async () => {
+    requests.length = 0;
+    respond = (_body, url) => {
+      if (url.includes("paid-only-model:generateContent") || url.includes("gemini-8.0-flash:generateContent")) {
+        return err(429, "Quota exceeded for metric: generate_content_free_tier_requests, limit: 0, model: x", "RESOURCE_EXHAUSTED");
+      }
+      if (/\/models(\?|$)/.test(url)) {
+        return {
+          body: {
+            models: [
+              { name: "models/gemini-8.0-flash", supportedGenerationMethods: ["generateContent"] },
+              { name: "models/gemini-8.0-flash-lite", supportedGenerationMethods: ["generateContent"] },
+            ],
+          },
+        };
+      }
+      if (url.includes("gemini-8.0-flash-lite:generateContent")) return ok(JSON.stringify(valid));
+      return err(400, "unexpected " + url, "INVALID_ARGUMENT");
+    };
+    const result = await provider("paid-only-model").generateStructured(request);
+    expect(result.data).toEqual(valid);
+    expect(requests.filter((r) => r.url.includes(":generateContent"))).toHaveLength(3);
+  });
+
+  it("reports an ordinary rate limit immediately, without retrying", async () => {
+    requests.length = 0;
+    respond = () => err(429, "Resource has been exhausted (e.g. check quota).", "RESOURCE_EXHAUSTED");
+    const started = Date.now();
+    await expect(provider("busy-model").generateStructured(request)).rejects.toMatchObject({ code: "provider_rate_limited" });
+    expect(requests).toHaveLength(1);
+    expect(Date.now() - started).toBeLessThan(3000);
   });
 });
