@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { clsx } from "clsx";
 import { EvidenceManager } from "@/components/app/evidence-manager";
+import { BankLogo, BankName } from "@/components/bank-logo";
 import { getSupabasePublishableKey } from "@/lib/env";
 import { Timeline } from "@/components/app/timeline";
 import { GuidanceCard } from "@/components/guidance-card";
@@ -109,16 +110,19 @@ export default async function CasePage({ params, searchParams }: PageProps<"/cas
       <div className="space-y-4">
         <Link href="/cases" className="text-sm text-ink-600 hover:text-ink-900">← All cases</Link>
         <header className="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
-          <div className="min-w-0 space-y-1.5">
-            <div className="flex flex-wrap items-center gap-2">
-              <span className="font-mono text-sm text-ink-500">{c.case_number}</span>
-              <StatusBadge status={c.status} />
+          <div className="flex min-w-0 items-start gap-4">
+            <BankLogo name={c.institution_name} size="lg" className="mt-1 hidden sm:inline-flex" />
+            <div className="min-w-0 space-y-1.5">
+              <div className="flex flex-wrap items-center gap-2">
+                <span className="font-mono text-sm text-ink-500">{c.case_number}</span>
+                <StatusBadge status={c.status} />
+              </div>
+              <h1 className="text-2xl font-semibold text-ink-950">
+                {title}
+                {c.institution_name ? <span className="text-ink-500"> · {c.institution_name}</span> : null}
+              </h1>
+              <p className="tabular text-lg font-medium text-ink-800">{formatMoney(c.amount, c.currency)}</p>
             </div>
-            <h1 className="text-2xl font-semibold text-ink-950">
-              {title}
-              {c.institution_name ? <span className="text-ink-500"> · {c.institution_name}</span> : null}
-            </h1>
-            <p className="tabular text-lg font-medium text-ink-800">{formatMoney(c.amount, c.currency)}</p>
           </div>
         </header>
       </div>
@@ -159,7 +163,7 @@ export default async function CasePage({ params, searchParams }: PageProps<"/cas
               <CardBody>
                 <DescriptionList
                   items={[
-                    { label: "Institution", value: c.institution_name },
+                    { label: "Institution", value: c.institution_name ? <BankName name={c.institution_name} /> : null },
                     { label: "Amount", value: formatMoney(c.amount, c.currency) },
                     { label: "Date and time", value: formatDate(c.transaction_date, { withTime: true }) },
                     { label: "Payment channel", value: c.payment_channel ? PAYMENT_CHANNEL_LABELS[c.payment_channel] : null },

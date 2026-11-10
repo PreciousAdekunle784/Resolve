@@ -16,6 +16,10 @@ const nextConfig: NextConfig = {
   // Lets the end-to-end tests build into a separate folder.
   distDir: process.env.NEXT_DIST_DIR || ".next",
   poweredByHeader: false,
+  // The statement PDF embeds bank logos read from /public at runtime.
+  outputFileTracingIncludes: {
+    "/api/account/statement": ["./public/banks/**/*"],
+  },
   turbopack: {
     rules: {
       "*.css": {

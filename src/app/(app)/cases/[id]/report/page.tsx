@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EvidenceManager } from "@/components/app/evidence-manager";
+import { BankName } from "@/components/bank-logo";
 import { getSupabasePublishableKey } from "@/lib/env";
 import { WizardProgress } from "@/components/app/wizard-progress";
 import { Alert } from "@/components/ui/alert";
@@ -126,7 +127,7 @@ async function ReviewStep({ c, evidence }: { c: CaseRow; evidence: EvidenceRow[]
         2,
         <DescriptionList
           items={[
-            { label: "Institution", value: c.institution_name },
+            { label: "Institution", value: c.institution_name ? <BankName name={c.institution_name} /> : null },
             { label: "Amount", value: c.amount ? formatMoney(c.amount, c.currency) : null },
             { label: "Date and time", value: c.transaction_date ? formatDate(c.transaction_date, { withTime: true }) : null },
             { label: "Payment channel", value: c.payment_channel ? PAYMENT_CHANNEL_LABELS[c.payment_channel] : null },

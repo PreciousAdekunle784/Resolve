@@ -170,37 +170,7 @@ export const COUNTRIES: { code: string; name: string }[] = [
 
 export const CURRENCIES = ["NGN", "USD", "GBP", "EUR", "GHS", "KES", "ZAR"] as const;
 
-export const COMMON_INSTITUTIONS = [
-  "Access Bank",
-  "Citibank Nigeria",
-  "Ecobank Nigeria",
-  "Fidelity Bank",
-  "First Bank of Nigeria",
-  "First City Monument Bank (FCMB)",
-  "Globus Bank",
-  "Guaranty Trust Bank (GTBank)",
-  "Jaiz Bank",
-  "Keystone Bank",
-  "Kuda Microfinance Bank",
-  "Lotus Bank",
-  "Moniepoint Microfinance Bank",
-  "OPay",
-  "PalmPay",
-  "Parallex Bank",
-  "Polaris Bank",
-  "Premium Trust Bank",
-  "Providus Bank",
-  "Stanbic IBTC Bank",
-  "Standard Chartered Bank Nigeria",
-  "Sterling Bank",
-  "SunTrust Bank",
-  "Titan Trust Bank",
-  "Union Bank of Nigeria",
-  "United Bank for Africa (UBA)",
-  "Unity Bank",
-  "Wema Bank",
-  "Zenith Bank",
-];
+// The list of banks (with logos) lives in src/lib/banks.ts.
 
 export const EVIDENCE_MAX_FILE_BYTES = 10 * 1024 * 1024;
 export const EVIDENCE_MAX_FILES_PER_CASE = 10;

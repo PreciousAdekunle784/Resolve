@@ -3,12 +3,12 @@
 import Link from "next/link";
 import { useState } from "react";
 import { errorsFor, FormMessage } from "@/components/forms/form-message";
+import { BankPicker } from "@/components/forms/bank-picker";
 import { useFormAction } from "@/components/forms/use-form-action";
 import { Alert } from "@/components/ui/alert";
 import { Button, ButtonLink } from "@/components/ui/button";
 import { Field, FieldError, Input, Select, Textarea } from "@/components/ui/field";
 import {
-  COMMON_INSTITUTIONS,
   CURRENCIES,
   ISSUE_CATEGORIES,
   ISSUE_CATEGORY_INFO,
@@ -106,20 +106,13 @@ export function DetailsStepForm({ c, editMode }: { c: CaseRow; editMode: boolean
           error={err("institution_name")}
           className="sm:col-span-2"
         >
-          <Input
+          <BankPicker
             id="institution_name"
             name="institution_name"
-            list="institutions"
             defaultValue={c.institution_name ?? ""}
-            placeholder="Start typing, e.g. Zenith Bank"
-            autoComplete="off"
             invalid={!!err("institution_name")}
+            describedBy="institution_name-hint"
           />
-          <datalist id="institutions">
-            {COMMON_INSTITUTIONS.map((i) => (
-              <option key={i} value={i} />
-            ))}
-          </datalist>
         </Field>
         <Field label="Amount" htmlFor="amount" error={err("amount")}>
           <Input

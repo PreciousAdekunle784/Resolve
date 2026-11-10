@@ -58,7 +58,7 @@ export default function PrivacyPage() {
 
       <h2>Your rights and choices</h2>
       <ul>
-        <li>Access and download a copy of your data from Settings.</li>
+        <li>Access your data and download a PDF statement of your account and reported transactions from Settings.</li>
         <li>Correct your profile and case details at any time.</li>
         <li>Withdraw AI processing permission at any time.</li>
         <li>Permanently delete your account, cases and evidence from Settings.</li>

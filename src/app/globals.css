@@ -114,7 +114,10 @@
     *::before,
     *::after {
       animation-duration: 0.01ms !important;
+      animation-delay: 0ms !important;
+      animation-iteration-count: 1 !important;
       transition-duration: 0.01ms !important;
+      transition-delay: 0ms !important;
       scroll-behavior: auto !important;
     }
   }
@@ -188,4 +191,168 @@
   background: linear-gradient(180deg, rgb(20 27 48 / 0.72), rgb(7 10 20 / 0.72));
   box-shadow: inset 0 1px 0 rgb(255 255 255 / 0.05), 0 20px 60px -20px rgb(0 0 0 / 0.8);
   backdrop-filter: blur(12px);
+}
+
+/* --------------------------------------------------------------------------
+ * Landing page motion
+ * Short, soft and transform/opacity-only so it stays smooth on phones. Every
+ * looping animation starts and ends at its resting state, so the global
+ * reduced-motion rule above leaves everything still and fully visible.
+ * ------------------------------------------------------------------------ */
+:root {
+  --ease-soft: cubic-bezier(0.22, 0.75, 0.25, 1);
+}
+
+@keyframes rise-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, 18px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes drop-in {
+  from {
+    opacity: 0;
+    transform: translate3d(0, -10px, 0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@keyframes beam-sway {
+  0%,
+  100% {
+    opacity: 1;
+    transform: none;
+  }
+  50% {
+    opacity: 0.72;
+    transform: translate3d(0, 2.5%, 0) scaleY(1.04);
+  }
+}
+
+@keyframes twinkle {
+  0%,
+  100% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.45;
+  }
+}
+
+@keyframes float {
+  0%,
+  100% {
+    transform: none;
+  }
+  50% {
+    transform: translate3d(0, -7px, 0);
+  }
+}
+
+@keyframes glow-breathe {
+  0%,
+  100% {
+    opacity: 0;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+@keyframes soft-ping {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 rgb(96 165 250 / 0);
+  }
+  50% {
+    box-shadow: 0 0 0 4px rgb(96 165 250 / 0.22);
+  }
+}
+
+/* Hero entrance: set --delay on each element to stagger them. */
+@utility motion-rise {
+  animation: rise-in 800ms var(--ease-soft) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@utility motion-drop {
+  animation: drop-in 600ms var(--ease-soft) both;
+  animation-delay: var(--delay, 0ms);
+}
+
+@utility motion-beam {
+  animation: beam-sway 11s ease-in-out infinite;
+  animation-delay: var(--delay, 0ms);
+  will-change: transform, opacity;
+}
+
+@utility motion-twinkle {
+  animation: twinkle 7s ease-in-out infinite;
+}
+
+@utility motion-float {
+  animation: float 8s ease-in-out infinite;
+  animation-delay: var(--delay, 0ms);
+}
+
+@utility motion-ping {
+  animation: soft-ping 2.4s ease-in-out infinite;
+}
+
+/* A second, brighter glow layered on the horizon that slowly breathes. */
+@utility horizon-breathe {
+  &::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    pointer-events: none;
+    box-shadow:
+      0 -16px 70px 10px rgb(59 130 246 / 0.55),
+      0 -60px 180px 40px rgb(37 99 235 / 0.25);
+    animation: glow-breathe 9s ease-in-out infinite;
+  }
+}
+
+/* Lift and light up a glass card on hover (devices with a real pointer). */
+@utility card-lift {
+  transition:
+    translate 300ms var(--ease-soft),
+    border-color 300ms ease,
+    box-shadow 300ms ease;
+  @media (hover: hover) {
+    &:hover {
+      translate: 0 -4px;
+      border-color: rgb(147 197 253 / 0.24);
+      box-shadow:
+        inset 0 1px 0 rgb(255 255 255 / 0.07),
+        0 24px 60px -18px rgb(0 0 0 / 0.85),
+        0 0 40px -12px rgb(59 130 246 / 0.45);
+    }
+  }
+}
+
+/*
+ * Scroll reveal. <ScrollReveal /> adds .reveal-pending only to elements that
+ * start below the fold, so content is never hidden without JavaScript, and
+ * nothing already on screen flickers.
+ */
+.reveal-pending {
+  opacity: 0;
+  transform: translate3d(0, 22px, 0);
+}
+
+.reveal-run {
+  transition:
+    opacity 700ms var(--ease-soft),
+    transform 700ms var(--ease-soft) !important;
+  transition-delay: var(--reveal-delay, 0ms) !important;
 }

@@ -7,7 +7,7 @@ type Variant = "primary" | "secondary" | "ghost" | "danger" | "dark" | "glow" | 
 type Size = "sm" | "md" | "lg";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-colors duration-150 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2";
+  "inline-flex items-center justify-center gap-2 rounded-full font-medium whitespace-nowrap transition-[color,background-color,border-color,box-shadow,scale] duration-200 disabled:cursor-not-allowed disabled:opacity-60 focus-visible:outline-2 focus-visible:outline-offset-2";
 
 const variants: Record<Variant, string> = {
   primary:
@@ -17,8 +17,8 @@ const variants: Record<Variant, string> = {
   ghost: "text-ink-700 hover:bg-ink-100 hover:text-ink-900 focus-visible:outline-brand-600",
   danger: "bg-danger-700 text-white hover:bg-danger-600 focus-visible:outline-danger-700",
   dark: "bg-white text-ink-950 hover:bg-ink-100 focus-visible:outline-white",
-  glow: "bg-linear-to-b from-brand-500 to-brand-600 text-white shadow-[0_0_0_1px_rgb(96_165_250/0.5),0_8px_32px_-4px_rgb(59_130_246/0.7)] hover:from-brand-400 hover:to-brand-500 focus-visible:outline-white",
-  glass: "border border-white/15 bg-white/[0.06] text-white backdrop-blur hover:bg-white/[0.12] focus-visible:outline-white",
+  glow: "bg-linear-to-b from-brand-500 to-brand-600 text-white shadow-[0_0_0_1px_rgb(96_165_250/0.5),0_8px_32px_-4px_rgb(59_130_246/0.7)] hover:from-brand-400 hover:to-brand-500 hover:shadow-[0_0_0_1px_rgb(147_197_253/0.7),0_10px_40px_-2px_rgb(59_130_246/0.9)] active:scale-[0.98] focus-visible:outline-white",
+  glass: "border border-white/15 bg-white/[0.06] text-white backdrop-blur hover:border-white/25 hover:bg-white/[0.12] active:scale-[0.98] focus-visible:outline-white",
 };
 
 const sizes: Record<Size, string> = {

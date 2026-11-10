@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { clsx } from "clsx";
+import { BankLogo } from "@/components/bank-logo";
 import { Badge, StatusBadge } from "@/components/ui/badge";
 import { ISSUE_CATEGORY_INFO, type IssueCategory } from "@/lib/constants";
 import { formatDate, formatMoney, todayInLagos } from "@/lib/format";
@@ -23,21 +24,6 @@ const CATEGORY_STYLE: Record<IssueCategory, { chip: string; icon: string }> = {
     icon: "M9 15L3 9m0 0l6-6M3 9h12a6 6 0 010 12h-3",
   },
 };
-
-const AVATAR_COLOURS = ["bg-ink-900", "bg-brand-700", "bg-emerald-700", "bg-rose-700", "bg-amber-700", "bg-violet-700", "bg-cyan-800"];
-
-function avatarFor(name: string | null) {
-  const label = (name ?? "")
-    .replace(/\(.*?\)/g, "")
-    .split(/\s+/)
-    .filter((w) => /^[A-Za-z]/.test(w) && !/^(of|and|the|bank|plc|ltd|limited)$/i.test(w))
-    .slice(0, 2)
-    .map((w) => w[0]!.toUpperCase())
-    .join("");
-  let hash = 0;
-  for (const ch of name ?? "") hash = (hash * 31 + ch.charCodeAt(0)) >>> 0;
-  return { label: label || "?", colour: AVATAR_COLOURS[hash % AVATAR_COLOURS.length] };
-}
 
 export function CategoryChip({ category }: { category: IssueCategory | null }) {
   if (!category) return <span className="text-sm text-ink-500">Not chosen</span>;
@@ -73,7 +59,6 @@ export function CaseList({ cases }: { cases: CaseRow[] }) {
           {cases.map((c) => {
             const inProgress = c.intake_status === "in_progress";
             const href = inProgress ? `/cases/${c.id}/report` : `/cases/${c.id}`;
-            const avatar = avatarFor(c.institution_name);
             const followUpDue =
               !inProgress && c.next_follow_up_date && c.next_follow_up_date <= today && c.status !== "resolved" && c.status !== "closed";
             const status = inProgress ? <Badge tone="warning" dot>Unfinished report</Badge> : <StatusBadge status={c.status} />;
@@ -84,9 +69,7 @@ export function CaseList({ cases }: { cases: CaseRow[] }) {
                 </td>
                 <td className="py-4 pr-4 pl-5 md:pl-0">
                   <div className="flex items-center gap-3">
-                    <span className={clsx("flex size-9 shrink-0 items-center justify-center rounded-full text-[0.7rem] font-semibold text-white", avatar.colour)} aria-hidden="true">
-                      {avatar.label}
-                    </span>
+                    <BankLogo name={c.institution_name} size="md" />
                     <div className="min-w-0">
                       <Link href={href} className="block font-medium break-words text-ink-900 after:absolute after:inset-0 group-hover:text-brand-700 focus-visible:outline-offset-[-2px]">
                         {c.institution_name ?? (c.issue_category ? ISSUE_CATEGORY_INFO[c.issue_category].label : "New report")}

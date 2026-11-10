@@ -15,19 +15,19 @@ export function SiteFooter() {
         <nav aria-label="Product" className="space-y-3 text-sm">
           <p className="font-semibold text-white">Product</p>
           <ul className="space-y-2">
-            <li><Link className="hover:text-white" href="/#how-it-works">How it works</Link></li>
-            <li><Link className="hover:text-white" href="/#problems">Problems we cover</Link></li>
-            <li><Link className="hover:text-white" href="/guidance">Official guidance</Link></li>
-            <li><Link className="hover:text-white" href="/register?next=/cases/new">Report a problem</Link></li>
+            <li><Link className="transition-colors hover:text-white" href="/#how-it-works">How it works</Link></li>
+            <li><Link className="transition-colors hover:text-white" href="/#problems">Problems we cover</Link></li>
+            <li><Link className="transition-colors hover:text-white" href="/guidance">Official guidance</Link></li>
+            <li><Link className="transition-colors hover:text-white" href="/register?next=/cases/new">Report a problem</Link></li>
           </ul>
         </nav>
         <nav aria-label="Legal" className="space-y-3 text-sm">
           <p className="font-semibold text-white">Trust</p>
           <ul className="space-y-2">
-            <li><Link className="hover:text-white" href="/privacy">Privacy notice</Link></li>
-            <li><Link className="hover:text-white" href="/terms">Terms of use</Link></li>
-            <li><Link className="hover:text-white" href="/#privacy">Security</Link></li>
-            <li><Link className="hover:text-white" href="/login">Sign in</Link></li>
+            <li><Link className="transition-colors hover:text-white" href="/privacy">Privacy notice</Link></li>
+            <li><Link className="transition-colors hover:text-white" href="/terms">Terms of use</Link></li>
+            <li><Link className="transition-colors hover:text-white" href="/#privacy">Security</Link></li>
+            <li><Link className="transition-colors hover:text-white" href="/login">Sign in</Link></li>
           </ul>
         </nav>
       </div>

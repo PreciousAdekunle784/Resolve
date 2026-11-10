@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
+import { DownloadStatementButton } from "@/components/app/download-statement";
 import { Alert } from "@/components/ui/alert";
-import { buttonClasses } from "@/components/ui/button";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/misc";
 import { aiDataUseNotice, getAIProviderInfo } from "@/lib/ai/provider-info";
@@ -46,10 +46,13 @@ export default async function SettingsPage() {
       </Card>
 
       <Card id="data">
-        <CardHeader title="Your data" description="Download a copy of everything Resolve stores about you." />
-        <CardBody>
-          <a href="/api/account/export" className={buttonClasses({ variant: "secondary" })}>Download my data (JSON)</a>
-          <p className="mt-2 text-xs text-ink-500">Includes your profile, cases, history, analyses and complaint drafts. Evidence files can be downloaded from each case.</p>
+        <CardHeader title="Your data" description="Download a statement of your account and every transaction you've reported." />
+        <CardBody className="space-y-2">
+          <DownloadStatementButton />
+          <p className="text-xs text-ink-500">
+            A PDF with your account details, a summary of amounts reported, outstanding and resolved, your full
+            transaction history and all case activity. Evidence files can be downloaded from each case.
+          </p>
         </CardBody>
       </Card>
 

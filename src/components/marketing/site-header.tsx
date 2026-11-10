@@ -16,7 +16,7 @@ const links = [
 
 function Arrow() {
   return (
-    <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+    <svg className="size-4 transition-transform duration-300 [:hover>&]:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
       <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.64l-4.22-4.22a.75.75 0 111.06-1.06l5.5 5.5a.75.75 0 010 1.06l-5.5 5.5a.75.75 0 11-1.06-1.06l4.22-4.22H3.75A.75.75 0 013 10z" clipRule="evenodd" />
     </svg>
   );
@@ -25,7 +25,7 @@ function Arrow() {
 export function SiteHeader() {
   const [open, setOpen] = useState(false);
   return (
-    <header className="absolute inset-x-0 top-0 z-40">
+    <header className="motion-drop absolute inset-x-0 top-0 z-40">
       <div className="mx-auto flex h-20 max-w-6xl items-center justify-between gap-4 px-4 sm:px-6">
         <Logo tone="light" />
         <nav
@@ -36,14 +36,14 @@ export function SiteHeader() {
             <Link
               key={l.href}
               href={l.href}
-              className="rounded-full px-3.5 py-1.5 text-[0.8125rem] text-ink-300 transition-colors hover:bg-white/10 hover:text-white"
+              className="rounded-full px-3.5 py-1.5 text-[0.8125rem] text-ink-300 transition-colors duration-200 hover:bg-white/10 hover:text-white"
             >
               {l.label}
             </Link>
           ))}
         </nav>
         <div className="hidden items-center gap-2 lg:flex">
-          <Link href="/login" className="rounded-full px-3 py-2 text-sm font-medium text-ink-200 hover:text-white">
+          <Link href="/login" className="rounded-full px-3 py-2 text-sm font-medium text-ink-200 transition-colors duration-200 hover:text-white">
             Sign in
           </Link>
           <ButtonLink href="/register?next=/cases/new" variant="glass">
@@ -75,7 +75,7 @@ export function SiteHeader() {
                 key={l.href}
                 href={l.href}
                 onClick={() => setOpen(false)}
-                className="rounded-xl px-3 py-2.5 text-sm font-medium text-ink-200 hover:bg-white/10 hover:text-white"
+                className="rounded-xl px-3 py-2.5 text-sm font-medium text-ink-200 transition-colors hover:bg-white/10 hover:text-white"
               >
                 {l.label}
               </Link>

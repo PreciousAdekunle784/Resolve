@@ -1,4 +1,6 @@
+import type { CSSProperties } from "react";
 import Link from "next/link";
+import { ScrollReveal } from "@/components/marketing/scroll-reveal";
 import { ButtonLink } from "@/components/ui/button";
 import { ISSUE_CATEGORIES, ISSUE_CATEGORY_INFO } from "@/lib/constants";
 
@@ -57,13 +59,18 @@ const faqs = [
   },
   {
     q: "Can I delete my data?",
-    a: "Yes. You can download a copy of your data or permanently delete your account, cases and uploaded files from Settings at any time.",
+    a: "Yes. You can download a PDF statement of your account and every transaction you have reported, or permanently delete your account, cases and uploaded files, from Settings at any time.",
   },
 ];
 
+/** Staggers a hero entrance animation. */
+const delay = (ms: number) => ({ "--delay": `${ms}ms` }) as CSSProperties;
+/** Staggers a scroll reveal within a group. */
+const stagger = (i: number) => ({ "--reveal-delay": `${i * 90}ms` }) as CSSProperties;
+
 function Arrow() {
   return (
-    <svg className="size-4" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+    <svg className="size-4 transition-transform duration-300 [:hover>&]:translate-x-0.5" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
       <path fillRule="evenodd" d="M3 10a.75.75 0 01.75-.75h10.64l-4.22-4.22a.75.75 0 111.06-1.06l5.5 5.5a.75.75 0 010 1.06l-5.5 5.5a.75.75 0 11-1.06-1.06l4.22-4.22H3.75A.75.75 0 013 10z" clipRule="evenodd" />
     </svg>
   );
@@ -79,7 +86,7 @@ function Check() {
 
 function SectionHeading({ eyebrow, title, body, align = "center" }: { eyebrow?: string; title: string; body?: string; align?: "center" | "left" }) {
   return (
-    <div className={align === "center" ? "mx-auto max-w-2xl space-y-4 text-center" : "space-y-4"}>
+    <div data-reveal className={align === "center" ? "mx-auto max-w-2xl space-y-4 text-center" : "space-y-4"}>
       {eyebrow ? (
         <p className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] px-3 py-1 text-xs font-medium text-brand-300">
           {eyebrow}
@@ -97,27 +104,27 @@ export default function LandingPage() {
       {/* ------------------------------------------------------------ Hero */}
       <section className="relative isolate overflow-hidden pt-28 sm:pt-32">
         <div className="night-grid absolute inset-0 -z-20 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,black,transparent)]" aria-hidden="true" />
-        <div className="star-field absolute inset-0 -z-20 bg-[length:520px_420px]" aria-hidden="true" />
-        <div className="light-beam -left-[6%] -z-10 origin-top-left -rotate-[38deg] [clip-path:polygon(30%_0,58%_0,100%_100%,10%_100%)]" aria-hidden="true" />
-        <div className="light-beam -right-[6%] -z-10 origin-top-right rotate-[38deg] [clip-path:polygon(42%_0,70%_0,90%_100%,0_100%)]" aria-hidden="true" />
+        <div className="star-field motion-twinkle absolute inset-0 -z-20 bg-[length:520px_420px]" aria-hidden="true" />
+        <div className="light-beam motion-beam -left-[6%] -z-10 origin-top-left -rotate-[38deg] [clip-path:polygon(30%_0,58%_0,100%_100%,10%_100%)]" aria-hidden="true" />
+        <div className="light-beam motion-beam -right-[6%] -z-10 origin-top-right rotate-[38deg] [clip-path:polygon(42%_0,70%_0,90%_100%,0_100%)]" style={delay(-5500)} aria-hidden="true" />
 
         <div className="mx-auto max-w-5xl px-4 text-center sm:px-6">
-          <p className="mx-auto inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-3.5 py-1.5 text-xs text-ink-200 backdrop-blur">
+          <p className="motion-rise mx-auto inline-flex items-center gap-2 rounded-full border border-white/12 bg-white/[0.05] px-3.5 py-1.5 text-xs text-ink-200 backdrop-blur">
             <svg className="size-3.5 text-brand-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
               <path d="M10 1l1.9 5.1L17 8l-5.1 1.9L10 15l-1.9-5.1L3 8l5.1-1.9L10 1zM16 13l.9 2.1L19 16l-2.1.9L16 19l-.9-2.1L13 16l2.1-.9L16 13z" />
             </svg>
             Money gone wrong? Built for bank customers and businesses in Nigeria
           </p>
-          <h1 className="mt-6 text-[2.4rem] leading-[1.08] font-light tracking-[-0.03em] text-white sm:text-[3.5rem] lg:text-[4rem]">
+          <h1 style={delay(90)} className="motion-rise mt-6 text-[2.4rem] leading-[1.08] font-light tracking-[-0.03em] text-white sm:text-[3.5rem] lg:text-[4rem]">
             Understand what happened.
             <br />
             <span className="bg-linear-to-r from-brand-300 via-white to-brand-300 bg-clip-text text-transparent">Know what to do next.</span>
           </h1>
-          <p className="mx-auto mt-5 max-w-xl text-base leading-relaxed text-ink-400">
+          <p style={delay(180)} className="motion-rise mx-auto mt-5 max-w-xl text-base leading-relaxed text-ink-400">
             Make sense of failed transfers, unexpected debits and other transaction problems — then organise your
             evidence and prepare a clear complaint for your bank or payment provider.
           </p>
-          <div className="mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
+          <div style={delay(270)} className="motion-rise mt-8 flex flex-col items-center justify-center gap-3 sm:flex-row">
             <ButtonLink href="/register?next=/cases/new" size="lg" variant="glow">
               Report a Problem <Arrow />
             </ButtonLink>
@@ -125,7 +132,7 @@ export default function LandingPage() {
               See how it works
             </ButtonLink>
           </div>
-          <ul className="mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ink-400">
+          <ul style={delay(360)} className="motion-rise mt-6 flex flex-wrap items-center justify-center gap-x-6 gap-y-2 text-sm text-ink-400">
             <li className="flex items-center gap-2"><Check /> Save and continue any time</li>
             <li className="flex items-center gap-2"><Check /> Your evidence stays private</li>
             <li className="flex items-center gap-2"><Check /> Never asks for your PIN or OTP</li>
@@ -144,9 +151,9 @@ export default function LandingPage() {
             body="Resolve currently supports four common types of problem. More will be added over time."
           />
           <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-4">
-            {ISSUE_CATEGORIES.map((c) => (
-              <div key={c} className="glass-card rounded-2xl p-6">
-                <span className="inline-flex size-11 items-center justify-center rounded-xl border border-brand-400/25 bg-brand-500/10 text-brand-300 shadow-[0_0_24px_-6px_rgb(59_130_246/0.6)]">
+            {ISSUE_CATEGORIES.map((c, i) => (
+              <div key={c} data-reveal style={stagger(i)} className="glass-card card-lift group rounded-2xl p-6">
+                <span className="inline-flex size-11 items-center justify-center rounded-xl border border-brand-400/25 bg-brand-500/10 text-brand-300 shadow-[0_0_24px_-6px_rgb(59_130_246/0.6)] transition-[scale,box-shadow] duration-300 group-hover:scale-105 group-hover:shadow-[0_0_30px_-4px_rgb(59_130_246/0.8)]">
                   <svg className="size-5" fill="none" viewBox="0 0 24 24" strokeWidth={1.6} stroke="currentColor" aria-hidden="true">
                     <path strokeLinecap="round" strokeLinejoin="round" d={icons[c]} />
                   </svg>
@@ -170,7 +177,7 @@ export default function LandingPage() {
           />
           <ol className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
             {steps.map((s, i) => (
-              <li key={s.title} className="glass-card relative rounded-2xl p-6">
+              <li key={s.title} data-reveal style={stagger(i)} className="glass-card card-lift relative rounded-2xl p-6">
                 <span className="font-mono text-xs text-brand-300">Step {String(i + 1).padStart(2, "0")}</span>
                 <h3 className="mt-3 font-medium text-white">{s.title}</h3>
                 <p className="mt-2 text-sm leading-relaxed text-ink-400">{s.body}</p>
@@ -198,15 +205,15 @@ export default function LandingPage() {
                 "Explains practical next steps and links to official complaint guidance.",
                 "Never invents references, dates, amounts or bank responses — if something is missing, it asks you.",
                 "Never treats a screenshot as proof that money has settled, and never promises a refund.",
-              ].map((t) => (
-                <li key={t} className="flex gap-3">
+              ].map((t, i) => (
+                <li key={t} data-reveal style={stagger(i)} className="flex gap-3">
                   <Check />
                   <span>{t}</span>
                 </li>
               ))}
             </ul>
           </div>
-          <div className="glass-card rounded-2xl p-6">
+          <div data-reveal style={stagger(1)} className="glass-card card-lift rounded-2xl p-6">
             <p className="text-sm font-medium text-white">Every finding is labelled by its source</p>
             <p className="mt-1 text-sm text-ink-400">So you always know what to trust and what to check.</p>
             <dl className="mt-5 divide-y divide-white/[0.06]">
@@ -215,8 +222,8 @@ export default function LandingPage() {
                 ["From a document", "Read from evidence you uploaded.", "bg-white/10 text-ink-200 ring-white/15"],
                 ["AI interpretation", "The assistant's reading of the situation.", "bg-amber-400/10 text-amber-300 ring-amber-300/25"],
                 ["Unverified", "Not confirmed — check before relying on it.", "bg-red-400/10 text-red-300 ring-red-300/25"],
-              ].map(([label, desc, cls]) => (
-                <div key={label} className="flex items-center justify-between gap-4 py-3.5">
+              ].map(([label, desc, cls], i) => (
+                <div key={label} data-reveal style={stagger(i + 2)} className="flex items-center justify-between gap-4 py-3.5">
                   <dt>
                     <span className={`inline-flex rounded-full px-2.5 py-0.5 text-xs font-medium ring-1 ring-inset ${cls}`}>{label}</span>
                   </dt>
@@ -232,13 +239,13 @@ export default function LandingPage() {
       <section className="py-24">
         <div className="container-page space-y-12">
           <SectionHeading eyebrow="Why Resolve" title="Less stress. A stronger, clearer complaint." />
-          <div className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.06] md:grid-cols-3">
+          <div data-reveal className="grid gap-px overflow-hidden rounded-2xl border border-white/[0.08] bg-white/[0.06] md:grid-cols-3">
             {[
               ["Clarity first", "A plain-language summary of what happened and what usually needs to happen next."],
               ["Nothing gets lost", "Evidence, references, responses and follow-up dates live in one case timeline."],
               ["Complaints that are complete", "Drafts include the facts institutions typically need, built only from details you confirmed."],
             ].map(([t, b]) => (
-              <div key={t} className="space-y-2 bg-night-950 p-7">
+              <div key={t} className="space-y-2 bg-night-950 p-7 transition-colors duration-300 hover:bg-night-900">
                 <h3 className="font-medium text-white">{t}</h3>
                 <p className="text-sm leading-relaxed text-ink-400">{b}</p>
               </div>
@@ -257,7 +264,7 @@ export default function LandingPage() {
               title="Your financial information deserves serious protection"
               body="Resolve is designed with the Nigeria Data Protection Act 2023 in mind. We collect only what is needed to help with your case, and you stay in control of it."
             />
-            <Link href="/privacy" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-300 hover:text-brand-100">
+            <Link href="/privacy" className="inline-flex items-center gap-1.5 text-sm font-medium text-brand-300 transition-colors hover:text-brand-100">
               Read the privacy notice <Arrow />
             </Link>
           </div>
@@ -267,10 +274,10 @@ export default function LandingPage() {
               ["Strict data isolation", "Database rules ensure each account can only ever access its own cases and files."],
               ["AI only with permission", "Case details are sent to the AI provider only after you opt in. Withdraw any time."],
               ["No sensitive credentials", "We never ask for PINs, OTPs, passwords, BVN, NIN or full card numbers."],
-              ["Export your data", "Download a copy of everything you have stored in Resolve."],
+              ["Download your statement", "Get a PDF statement of your account and every transaction you have reported."],
               ["Delete everything", "Permanently remove your account, cases and files whenever you choose."],
-            ].map(([t, b]) => (
-              <li key={t} className="glass-card rounded-2xl p-5">
+            ].map(([t, b], i) => (
+              <li key={t} data-reveal style={stagger(i % 2)} className="glass-card card-lift rounded-2xl p-5">
                 <p className="font-medium text-white">{t}</p>
                 <p className="mt-1.5 text-sm leading-relaxed text-ink-400">{b}</p>
               </li>
@@ -282,7 +289,7 @@ export default function LandingPage() {
       {/* ------------------------------------------------ Official guidance */}
       <section className="py-16">
         <div className="container-page">
-          <div className="glass-card flex flex-col items-start justify-between gap-6 rounded-2xl p-7 md:flex-row md:items-center">
+          <div data-reveal className="glass-card flex flex-col items-start justify-between gap-6 rounded-2xl p-7 md:flex-row md:items-center">
             <div className="space-y-2">
               <h2 className="text-xl font-medium text-white">We complement official channels — we don&apos;t replace them</h2>
               <p className="max-w-3xl text-sm leading-relaxed text-ink-400">
@@ -300,12 +307,12 @@ export default function LandingPage() {
       <section id="faq" className="scroll-mt-24 py-24">
         <div className="container-page grid gap-10 lg:grid-cols-[0.8fr_1.2fr]">
           <SectionHeading align="left" eyebrow="FAQ" title="Questions people ask before they start" />
-          <div className="divide-y divide-white/[0.07] rounded-2xl border border-white/[0.08] bg-white/[0.02]">
+          <div data-reveal style={stagger(1)} className="divide-y divide-white/[0.07] rounded-2xl border border-white/[0.08] bg-white/[0.02]">
             {faqs.map((f) => (
               <details key={f.q} className="group px-6 py-5 [&_summary::-webkit-details-marker]:hidden">
-                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-white">
+                <summary className="flex cursor-pointer list-none items-center justify-between gap-4 font-medium text-white transition-colors hover:text-brand-100">
                   {f.q}
-                  <svg className="size-5 shrink-0 text-ink-500 transition-transform group-open:rotate-45" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
+                  <svg className="size-5 shrink-0 text-ink-500 transition-[rotate,color] duration-300 group-open:rotate-45 group-hover:text-ink-300" viewBox="0 0 20 20" fill="currentColor" aria-hidden="true">
                     <path d="M10.75 4.75a.75.75 0 00-1.5 0v4.5h-4.5a.75.75 0 000 1.5h4.5v4.5a.75.75 0 001.5 0v-4.5h4.5a.75.75 0 000-1.5h-4.5v-4.5z" />
                   </svg>
                 </summary>
@@ -318,8 +325,8 @@ export default function LandingPage() {
 
       {/* ------------------------------------------------------------- CTA */}
       <section className="relative isolate overflow-hidden pt-28 pb-44">
-        <div className="horizon top-[78%] h-[1400px]! w-[1400px]!" aria-hidden="true" />
-        <div className="relative z-10 mx-auto max-w-2xl space-y-6 px-4 text-center">
+        <div className="horizon horizon-breathe top-[78%] h-[1400px]! w-[1400px]!" aria-hidden="true" />
+        <div data-reveal className="relative z-10 mx-auto max-w-2xl space-y-6 px-4 text-center">
           <h2 className="text-3xl font-light tracking-tight text-white sm:text-5xl">Had a transaction go wrong?</h2>
           <p className="text-ink-400">Start a case in a few minutes. Save your progress and come back whenever you&apos;re ready.</p>
           <ButtonLink href="/register?next=/cases/new" size="lg" variant="glow">
@@ -327,6 +334,7 @@ export default function LandingPage() {
           </ButtonLink>
         </div>
       </section>
+      <ScrollReveal />
     </>
   );
 }
@@ -337,10 +345,10 @@ export default function LandingPage() {
  */
 function HeroPreview() {
   return (
-    <div className="relative mx-auto mt-12 h-[400px] max-w-6xl px-4 sm:mt-14 sm:h-[430px] sm:px-6" role="img" aria-label="Illustration of a Resolve case: evidence, AI analysis and timeline">
+    <div style={delay(450)} className="motion-rise relative mx-auto mt-12 h-[400px] max-w-6xl px-4 sm:mt-14 sm:h-[430px] sm:px-6" role="img" aria-label="Illustration of a Resolve case: evidence, AI analysis and timeline">
       <div className="grid grid-cols-1 gap-5 md:grid-cols-[1fr_1.15fr_1fr] md:items-start">
         {/* Evidence */}
-        <div className="glass-card hidden rounded-2xl p-5 md:mt-16 md:block">
+        <div style={delay(-2000)} className="glass-card motion-float hidden rounded-2xl p-5 md:mt-16 md:block">
           <div className="flex items-center justify-between">
             <p className="text-sm text-ink-300">Evidence</p>
             <span className="rounded-full bg-white/[0.06] px-2 py-0.5 text-[11px] text-ink-300">3 files</span>
@@ -357,7 +365,7 @@ function HeroPreview() {
                 </span>
                 <span className="min-w-0 flex-1 truncate text-left text-sm text-ink-200">{name}</span>
                 <span className="flex items-center gap-1.5 text-[11px] text-ink-400">
-                  <span className={`size-1.5 rounded-full ${dot}`} />
+                  <span className={`size-1.5 rounded-full ${dot} ${state === "Reading…" ? "motion-ping" : ""}`} />
                   {state}
                 </span>
               </li>
@@ -366,10 +374,10 @@ function HeroPreview() {
         </div>
 
         {/* Analysis */}
-        <div className="glass-card rounded-2xl p-5 ring-1 ring-brand-400/20">
+        <div className="glass-card motion-float rounded-2xl p-5 ring-1 ring-brand-400/20">
           <div className="flex items-center justify-between">
             <p className="flex items-center gap-2 text-sm text-ink-200">
-              <span className="size-2 rounded-full bg-brand-400 shadow-[0_0_10px_rgb(96_165_250)]" />
+              <span className="motion-ping size-2 rounded-full bg-brand-400 shadow-[0_0_10px_rgb(96_165_250)]" />
               Case analysis
             </p>
             <span className="rounded-full border border-white/10 px-2.5 py-0.5 text-[11px] text-ink-300">Example case</span>
@@ -386,17 +394,17 @@ function HeroPreview() {
               ["Institution", "You told us", "bg-brand-500/15 text-brand-300"],
               ["Transaction reference", "From a document", "bg-white/10 text-ink-200"],
               ["Recipient account", "Unverified", "bg-red-400/10 text-red-300"],
-            ].map(([label, src, cls]) => (
+            ].map(([label, src, cls], i) => (
               <li key={label} className="flex items-center justify-between border-b border-white/[0.05] pb-2 last:border-0">
                 <span className="text-ink-400">{label}</span>
-                <span className={`rounded-full px-2 py-0.5 text-[11px] ${cls}`}>{src}</span>
+                <span style={delay(900 + i * 140)} className={`motion-rise rounded-full px-2 py-0.5 text-[11px] ${cls}`}>{src}</span>
               </li>
             ))}
           </ul>
         </div>
 
         {/* Timeline */}
-        <div className="glass-card hidden rounded-2xl p-5 md:mt-16 md:block">
+        <div style={delay(-4500)} className="glass-card motion-float hidden rounded-2xl p-5 md:mt-16 md:block">
           <p className="text-sm text-ink-300">Case timeline</p>
           <ol className="mt-4 space-y-3.5 border-l border-white/10 pl-4 text-left text-sm">
             {[
@@ -404,9 +412,9 @@ function HeroPreview() {
               ["Complaint approved", "bg-emerald-400"],
               ["Sent to your bank", "bg-brand-400"],
               ["Awaiting response", "bg-amber-400"],
-            ].map(([t, dot]) => (
-              <li key={t} className="relative text-ink-200">
-                <span className={`absolute top-1.5 -left-[1.31rem] size-2 rounded-full ${dot}`} />
+            ].map(([t, dot], i) => (
+              <li key={t} style={delay(800 + i * 150)} className="motion-rise relative text-ink-200">
+                <span className={`absolute top-1.5 -left-[1.31rem] size-2 rounded-full ${dot} ${i === 3 ? "motion-ping" : ""}`} />
                 {t}
               </li>
             ))}

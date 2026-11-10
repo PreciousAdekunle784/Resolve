@@ -23,7 +23,9 @@ Resolve is an AI-powered financial recovery assistant for people and small busin
 | Complaint builder | AI draft or no-AI template built only from confirmed facts, `[ADD: …]` placeholders for missing details, warnings for unconfirmed details, editing, versions, copy, PDF export, explicit user approval |
 | Tracking | Record submission (date, channel, reference), institution responses, status changes, follow-up dates, notes and outcome. Every status change is logged automatically. Append-only timeline |
 | Guidance engine | Guidance records with country, category, source URL, dates and verification status. Admin screen to add and verify records |
-| Settings | Profile, AI consent on/off, notification preferences (saved; email sending not built yet), JSON data export, permanent account deletion |
+| Settings | Profile, AI consent on/off, notification preferences (saved; email sending not built yet), PDF account statement download, permanent account deletion |
+| Account statement | Branded multi-page PDF: account details, totals reported / outstanding (in dispute) / resolved per currency, full transaction table with repeated headers and bank logos, case activity, page numbers. Built only from the signed-in user's own records |
+| Bank logos | One directory of Nigerian banks (`src/lib/banks.ts`) with logos in `public/banks` (see `docs/ASSETS.md`), shown in the bank picker, case list, case page and review. Unknown banks fall back to initials or a neutral bank icon |
 
 ### Not yet available (shown clearly in the app)
 
@@ -193,7 +195,7 @@ src/
     onboarding/        First-time setup
     (app)/             Signed-in app: dashboard, cases, settings, admin
       cases/[id]/      Case page: overview, evidence, AI analysis, complaint, tracking
-    api/               Evidence uploads, signed URLs, AI, PDF export, data export
+    api/               Evidence uploads, signed URLs, AI, complaint PDF, account statement PDF
   components/          Design system (ui/) and app components
   lib/
     ai/                Provider interface, Anthropic provider, prompts, schemas, grounding checks

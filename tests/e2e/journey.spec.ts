@@ -1,4 +1,7 @@
-import { expect, test, type Browser, type Page } from "@playwright/test";
+import { expect, test, type APIResponse, type Browser, type Page } from "@playwright/test";
+import { execFileSync } from "node:child_process";
+import { mkdtempSync, writeFileSync } from "node:fs";
+import { tmpdir } from "node:os";
 import path from "node:path";
 
 /**
@@ -14,6 +17,23 @@ const userB = { name: "Bayo Adeyemi", email: `bayo.${Date.now()}@example.com` };
 
 let caseUrl = "";
 let caseId = "";
+let evidenceId = "";
+
+/** Checks a statement response is a PDF and returns its text (when pdftotext is installed). */
+async function statementText(res: APIResponse): Promise<string | null> {
+  expect(res.status()).toBe(200);
+  expect(res.headers()["content-type"]).toContain("application/pdf");
+  expect(res.headers()["content-disposition"]).toMatch(/attachment; filename="Resolve-statement-\d{4}-\d{2}-\d{2}\.pdf"/);
+  const bytes = await res.body();
+  expect(bytes.subarray(0, 5).toString()).toBe("%PDF-");
+  try {
+    const file = path.join(mkdtempSync(path.join(tmpdir(), "statement-")), "s.pdf");
+    writeFileSync(file, bytes);
+    return execFileSync("pdftotext", ["-layout", file, "-"]).toString();
+  } catch {
+    return null;
+  }
+}
 
 test.describe.configure({ mode: "serial" });
 
@@ -60,7 +80,8 @@ test("public site, navigation and protected routes", async ({ page }) => {
   await expect(page.getByText("CBN Consumer Complaints Portal")).toBeVisible();
   await expect(page.getByText("Not yet verified by Resolve").first()).toBeVisible();
 
-  // Protected pages redirect to sign in.
+  // Protected pages redirect to sign in, and account data needs a session.
+  expect((await page.request.get("/api/account/statement")).status()).toBe(401);
   await page.goto("/dashboard");
   await expect(page).toHaveURL(/\/login\?next=%2Fdashboard/);
 
@@ -103,7 +124,12 @@ test("register, onboard and report a problem with evidence", async ({ page }) =>
   await expect(page).toHaveURL(/\/report\?step=2/);
   caseUrl = page.url().replace(/\/report.*$/, "");
   caseId = caseUrl.split("/").pop()!;
-  await page.getByLabel("Bank or payment provider").fill("Zenith Bank");
+  // The bank picker suggests banks (with their logos) as you type.
+  const bank = page.getByRole("combobox", { name: "Bank or payment provider" });
+  await bank.fill("zeni");
+  await page.getByRole("option", { name: "Zenith Bank" }).click();
+  await expect(bank).toHaveValue("Zenith Bank");
+  await expect(page.locator('img[src="/banks/zenith.png"]').first()).toBeVisible();
   await page.getByLabel("Amount").fill("-5");
   await page.getByRole("button", { name: "Save and continue" }).click();
   await expect(page.getByText("Amount must be more than zero")).toBeVisible();
@@ -133,7 +159,9 @@ test("register, onboard and report a problem with evidence", async ({ page }) =>
 
   // Step 4: evidence — one valid file, one disguised file the server must reject
   const input = page.locator(`#evidence-input-${caseId}`);
+  const saved = page.waitForResponse((r) => r.url().endsWith(`/api/cases/${caseId}/evidence`) && r.request().method() === "POST");
   await input.setInputFiles(path.join(FIXTURES, "receipt.png"));
+  evidenceId = ((await (await saved).json()) as { evidence: { id: string } }).evidence.id;
   await expect(page.getByRole("list", { name: "Uploaded evidence" }).getByText("receipt.png")).toBeVisible();
   await input.setInputFiles(path.join(FIXTURES, "not-really.png"));
   await expect(page.getByText(/isn't a valid PNG, JPG or PDF/)).toBeVisible();
@@ -146,6 +174,7 @@ test("register, onboard and report a problem with evidence", async ({ page }) =>
   // Step 5: review and submit
   await expect(page.getByRole("heading", { name: "Review your report" })).toBeVisible();
   await expect(page.getByText("Zenith Bank")).toBeVisible();
+  await expect(page.locator('img[src="/banks/zenith.png"]').first()).toBeVisible();
   await expect(page.getByText("₦25,000.00")).toBeVisible();
   await page.getByRole("button", { name: "Confirm and create case" }).click();
   await expect(page.getByText("Your case has been created")).toBeVisible();
@@ -291,6 +320,7 @@ test("tracking: submission, response, follow-up, resolution and timeline", async
   await dialog.getByRole("button", { name: "Apply" }).click();
   await expect(page).toHaveURL(/status=resolved/);
   await expect(page.getByRole("row", { name: /Zenith Bank/ })).toBeVisible();
+  await expect(page.getByRole("row", { name: /Zenith Bank/ }).locator('img[src="/banks/zenith.png"]')).toBeVisible();
 
   await page.getByRole("button", { name: "Show" }).click();
   await page.getByRole("option", { name: "Unfinished reports" }).click();
@@ -299,14 +329,19 @@ test("tracking: submission, response, follow-up, resolution and timeline", async
 });
 
 test("data isolation between users", async ({ browser }) => {
-  // Get user A's evidence id through their own data export.
+  // User A's statement covers their case; they can open their own evidence.
   const pageA = await newPage(browser);
   await login(pageA, userA.email);
-  const exportRes = await pageA.request.get("/api/account/export");
-  expect(exportRes.status()).toBe(200);
-  const exported = await exportRes.json();
-  expect(exported.cases).toHaveLength(1);
-  const evidenceId = exported.evidence_files[0].id as string;
+  const textA = await statementText(await pageA.request.get("/api/account/statement"));
+  await pageA.goto(caseUrl);
+  const caseNumber = (await pageA.getByText(/RSV-[0-9A-F]{4}-[0-9A-F]{4}/).first().textContent())?.match(/RSV-[0-9A-F]{4}-[0-9A-F]{4}/)?.[0] ?? "";
+  expect(caseNumber).not.toBe("");
+  if (textA !== null) {
+    expect(textA).toContain(caseNumber);
+    expect(textA).toContain("Ada Okafor");
+    expect(textA).toContain("NGN 25,000.00");
+  }
+  expect(evidenceId).not.toBe("");
   const ownUrl = await pageA.request.get(`/api/evidence/${evidenceId}/url`);
   expect(ownUrl.status()).toBe(200);
 
@@ -333,8 +368,12 @@ test("data isolation between users", async ({ browser }) => {
   expect((await pageB.request.delete(`/api/evidence/${evidenceId}`)).status()).toBe(404);
   expect((await pageB.request.post(`/api/cases/${caseId}/analysis`)).status()).toBe(404);
   expect((await pageB.request.post(`/api/cases/${caseId}/evidence/upload-url`, { data: { filename: "x.png", mimeType: "image/png", size: 10 } })).status()).toBe(404);
-  const exportB = await (await pageB.request.get("/api/account/export")).json();
-  expect(exportB.cases).toHaveLength(0);
+  const textB = await statementText(await pageB.request.get("/api/account/statement"));
+  if (textB !== null) {
+    expect(textB).toContain("No transactions reported yet");
+    expect(textB).not.toContain(caseNumber);
+    expect(textB).not.toContain("Ada Okafor");
+  }
 
   // Without consent, AI is not used — but the template still works.
   await pageB.goto("/cases/new");
@@ -371,6 +410,13 @@ test("admin guidance management and settings", async ({ page }) => {
   await page.getByRole("checkbox", { name: /Allow AI analysis/ }).check();
   await page.getByRole("button", { name: "Save privacy choice" }).click();
   await expect(page.getByText("AI analysis is turned on.")).toBeVisible();
+
+  // Download the PDF statement.
+  const downloading = page.waitForEvent("download");
+  await page.getByRole("button", { name: "Download PDF Statement" }).click();
+  const download = await downloading;
+  expect(download.suggestedFilename()).toMatch(/^Resolve-statement-\d{4}-\d{2}-\d{2}\.pdf$/);
+  await expect(page.getByText("Statement downloaded")).toBeVisible();
 
   // Sign out and back in.
   await page.getByRole("button", { name: "Sign out" }).first().click();

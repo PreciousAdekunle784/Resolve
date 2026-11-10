@@ -17,6 +17,7 @@
 /.next/
 /.next-e2e/
 /.next-preview/
+/.next-dev/
 /out/
 
 # production
