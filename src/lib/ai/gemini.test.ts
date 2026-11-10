@@ -180,3 +180,18 @@ describe("quota handling", () => {
     expect(Date.now() - started).toBeLessThan(3000);
   });
 });
+
+describe("overloaded models", () => {
+  it("switches to another model when the configured one is overloaded", async () => {
+    requests.length = 0;
+    respond = (_body, url) => {
+      if (url.includes("busy-flash:generateContent")) return err(503, "This model is currently experiencing high demand.", "UNAVAILABLE");
+      if (/\/models(\?|$)/.test(url)) return { body: { models: [{ name: "models/gemini-5.0-flash", supportedGenerationMethods: ["generateContent"] }] } };
+      if (url.includes("gemini-5.0-flash:generateContent")) return ok(JSON.stringify(valid));
+      return err(400, "unexpected " + url, "INVALID_ARGUMENT");
+    };
+    await expect(provider("busy-flash").generateStructured(request)).resolves.toMatchObject({ data: valid });
+    // One attempt on the busy model (no silent retries), then the working one.
+    expect(requests.filter((r) => r.url.includes("busy-flash"))).toHaveLength(1);
+  });
+});

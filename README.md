@@ -100,7 +100,7 @@ Resolve supports two AI providers. Choose one with `AI_PROVIDER`:
 1. Go to [aistudio.google.com](https://aistudio.google.com) and sign in with a Google account.
 2. Click **Get API key → Create API key**, and copy it.
 3. In `.env.local`, set `AI_PROVIDER=gemini` and `GEMINI_API_KEY=<your key>`.
-4. Optional: set `AI_MODEL` to a "Flash" model code shown in AI Studio. If it's empty, the `gemini-flash-latest` alias is used. If the name isn't recognised, the AI buttons say AI isn't set up and the server log explains why.
+4. Leave `AI_MODEL` empty to use `gemini-3.5-flash`, which was tested with a free key. If a model is unavailable, has no free quota or is overloaded, Resolve automatically switches to another available Flash model. Signed-in users can check the AI connection at `/api/ai/diagnostics`.
 
 Things to know about the free tier:
 - **Use test data, not real people's documents.** Resolve shows users a notice about Google's free-tier data use before they opt in. It appears at onboarding, in Settings and in the privacy notice.

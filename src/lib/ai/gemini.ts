@@ -45,7 +45,8 @@ export class GeminiProvider implements AIProvider {
       httpOptions: {
         timeout: opts.timeoutMs,
         // Report quota/rate limits straight away instead of silently retrying for minutes.
-        retryOptions: { attempts: 2, initialDelay: 1, maxDelay: 4, httpStatusCodes: [500, 502, 503, 504] },
+        // No silent SDK retries: when a model is busy, Resolve switches to another model instead.
+        retryOptions: { attempts: 1 },
         ...(opts.baseUrl ? { baseUrl: opts.baseUrl } : {}),
       },
     });
@@ -58,8 +59,8 @@ export class GeminiProvider implements AIProvider {
     try {
       return await this.generateWithSchema(request);
     } catch (error) {
-      if (!(error instanceof AIError && error.code === "model_unavailable") || discoveredModels.has(configured)) throw error;
-      // The configured model doesn't exist or has no free quota: try the best available Flash models.
+      if (!isSwitchable(error) || discoveredModels.has(configured)) throw error;
+      // The model doesn't exist, has no free quota, or is overloaded: try other available Flash models.
       const tried = new Set([this.model]);
       const candidates = (await this.listFlashModels()).filter((m) => !tried.has(m)).slice(0, 3);
       let lastError: unknown = error;
@@ -72,7 +73,7 @@ export class GeminiProvider implements AIProvider {
           return result;
         } catch (e) {
           lastError = e;
-          if (!(e instanceof AIError && e.code === "model_unavailable")) throw e;
+          if (!isSwitchable(e)) throw e;
         }
       }
       throw lastError;
@@ -150,6 +151,11 @@ export class GeminiProvider implements AIProvider {
     if (!checked.success) throw new AIError("invalid_response");
     return { data: checked.data, model: response.modelVersion ?? this.model };
   }
+}
+
+/** Errors where trying a different model may help (missing, no free quota, overloaded). */
+function isSwitchable(e: unknown): boolean {
+  return e instanceof AIError && (e.code === "model_unavailable" || e.code === "provider_unavailable" || e.code === "timeout");
 }
 
 function toPart(part: AIContentPart): Part {

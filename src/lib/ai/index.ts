@@ -19,7 +19,7 @@ import { getAnthropicApiKey, getConfiguredProviderName, getGeminiApiKey } from "
  *
  *   Google Gemini (free API keys from https://aistudio.google.com):
  *   GEMINI_API_KEY       required
- *   AI_MODEL             a model code from Google AI Studio (default: gemini-flash-latest)
+ *   AI_MODEL             a model code from Google AI Studio (default: gemini-3.5-flash)
  *   GEMINI_PAID_TIER     "true" only if billing is enabled (changes the privacy notice)
  */
 export function isAIConfigured(): boolean {
@@ -32,9 +32,11 @@ export function getAIProvider(): AIProvider {
     if (!apiKey) throw new AIError("not_configured");
     return new GeminiProvider({
       apiKey,
-      model: process.env.AI_MODEL?.trim() || "gemini-flash-latest",
+      // gemini-3.5-flash was verified working on a free key (Nov 2026). If it's
+      // ever unavailable, the provider switches to another available Flash model.
+      model: process.env.AI_MODEL?.trim() || "gemini-3.5-flash",
       // Keep each attempt short so a slow model can't use up the whole request.
-      timeoutMs: 60_000,
+      timeoutMs: 45_000,
       baseUrl: process.env.GEMINI_BASE_URL || undefined,
     });
   }
