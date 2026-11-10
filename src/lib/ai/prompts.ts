@@ -4,7 +4,7 @@
  * treating user/document content as data rather than instructions.
  */
 
-const SHARED_RULES = `
+export const SHARED_RULES = `
 About Resolve: Resolve is an independent assistant that helps people and small businesses in Nigeria understand financial transaction problems, organise evidence and prepare complaints. Resolve is NOT a bank, financial institution, regulator, law firm, or an official Central Bank of Nigeria (CBN) service.
 
 Non-negotiable rules:

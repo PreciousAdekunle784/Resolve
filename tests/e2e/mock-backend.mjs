@@ -21,6 +21,7 @@ import http from "node:http";
 import path from "node:path";
 import pg from "pg";
 import { JWT_SECRET, signJwt } from "./keys.mjs";
+import { handleGoogle } from "./mock-google.mjs";
 
 const PORT = Number(process.env.MOCK_BACKEND_PORT ?? 54321);
 const ADMIN_URL = process.env.TEST_DATABASE_URL;
@@ -576,6 +577,46 @@ function fakeTaskResult(system, userText) {
       body: "Dear Sir/Madam,\n\nI am writing to complain about a transfer of NGN 25,000.00 that was debited from my account but not received.\n\nTransaction reference: [ADD: transaction reference]\n\nPlease acknowledge this complaint and provide a complaint reference number.\n\nYours faithfully,\nE2E Tester",
       missing_placeholders: ["transaction reference"],
     };
+  } else if (system.includes("You review a complaint letter before it is sent")) {
+    result = {
+      summary: "The letter clearly identifies the transaction and the resolution requested.",
+      issues: [{ problem: "The letter doesn't say when you first noticed the problem.", suggestion: "Add the date you noticed it, if you know it." }],
+      tone_ok: true,
+    };
+  } else if (system.includes("You read a reply from a financial institution")) {
+    const ref = (userText.match(/[A-Z]{2}\/CMP\/\d+/) ?? [])[0];
+    const timeframe = (userText.match(/within \d+ working days/) ?? [])[0];
+    result = {
+      classification: "information_requested",
+      summary: "The bank logged your complaint and asked for a copy of your account statement.",
+      reference_numbers: [
+        ...(ref ? [{ value: ref, quote: `reference ${ref}` }] : []),
+        { value: "FAKE/REF/000", quote: "reference FAKE/REF/000" },
+      ],
+      information_requested: ["A copy of your account statement for the day of the transaction"],
+      timeframes: timeframe ? [{ quote: timeframe }] : [],
+      amounts: [],
+      suggested_case_status: "additional_information_required",
+      status_reason: "The bank asked you for more information.",
+      reply_points: ["Attach your statement and quote their reference."],
+      confidence: "high",
+    };
+  } else if (system.includes("You plan the next steps of a customer's complaint")) {
+    const guidanceId = (userText.match(/ID: ([0-9a-f-]{36})/) ?? [])[1];
+    result = {
+      situation: "Your bank asked for your statement before it can continue.",
+      next_actions: [
+        { title: "Send the statement", detail: "Reply to the bank with your statement attached and quote their reference.", timing: "now" },
+        { title: "Set a follow-up date", detail: "Plan when you'll chase them if you hear nothing.", timing: "if_no_reply" },
+      ],
+      escalation: {
+        consider_now: false,
+        explanation: "It's too early to escalate; the bank is still investigating.",
+        guidance_ids: [...(guidanceId ? [guidanceId] : []), "00000000-0000-0000-0000-000000000000"],
+      },
+      evidence_to_gather: ["Account statement"],
+      cautions: ["Never share your PIN or OTP with anyone who contacts you about this complaint."],
+    };
   } else {
     return null;
   }
@@ -647,6 +688,7 @@ http
       if (url.pathname.startsWith("/storage/v1")) return await handleStorage(pool, req, res, url, body);
       if (url.pathname.startsWith("/v1/messages")) return handleAnthropic(req, res, body);
       if (/^\/v1(beta|alpha)?\/models\/[^/]+:generateContent$/.test(url.pathname)) return handleGemini(req, res, body, url);
+      if (await handleGoogle(req, res, url, body, send)) return;
       return send(res, 404, { message: "not found" });
     } catch (e) {
       console.error("[mock]", e);

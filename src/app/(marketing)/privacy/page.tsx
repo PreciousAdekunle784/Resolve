@@ -48,6 +48,40 @@ export default function PrivacyPage() {
       </p>
       <p>{aiDataUseNotice(ai)}</p>
 
+      <h2>Sending complaints from your Gmail account</h2>
+      <p>
+        If you choose to send a complaint by email, you connect your own Gmail account through Google&apos;s permission
+        screen. Resolve never sees your Google password.
+      </p>
+      <ul>
+        <li>
+          <strong>Send email (required for this feature):</strong> Resolve sends only the complaint and attachments you
+          approve and authorise, to the address you choose, and records Gmail&apos;s confirmation.
+        </li>
+        <li>
+          <strong>Read email (optional):</strong> if you allow it, Resolve opens only the email threads of complaints it
+          sent for you, to find your institution&apos;s replies and to confirm whether an interrupted email was sent. It
+          doesn&apos;t read the rest of your mailbox.
+        </li>
+        <li>
+          Resolve&apos;s use of information received from Google APIs adheres to the{" "}
+          <a href="https://developers.google.com/terms/api-services-user-data-policy" target="_blank" rel="noopener noreferrer">
+            Google API Services User Data Policy
+          </a>
+          , including the Limited Use requirements. Gmail data is used only to provide these features to you. It isn&apos;t
+          sold, used for advertising, or used to train AI models, and people don&apos;t read it except with your permission,
+          for security, or where the law requires.
+        </li>
+        <li>
+          Replies Resolve finds are saved to your case. If you ask, they&apos;re sent to our AI provider (see above) to explain
+          them.
+        </li>
+        <li>
+          Google&apos;s access token is stored encrypted. Disconnect at any time in Settings (Resolve also revokes its access at
+          Google), or from your Google Account&apos;s security page. Deleting your Resolve account does the same.
+        </li>
+      </ul>
+
       <h2>How your data is protected</h2>
       <ul>
         <li>Database rules (Row Level Security) ensure each account can access only its own records.</li>

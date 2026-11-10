@@ -1,5 +1,6 @@
 import { defineConfig, devices } from "@playwright/test";
 import { ANON_KEY, SERVICE_KEY } from "./tests/e2e/keys.mjs";
+import { TEST_GOOGLE_CLIENT_ID, TEST_GOOGLE_CLIENT_SECRET } from "./tests/e2e/mock-google.mjs";
 
 /**
  * End-to-end tests run the real Resolve app against a local TEST backend
@@ -50,6 +51,15 @@ export default defineConfig({
           ? { AI_PROVIDER: "gemini", GEMINI_API_KEY: "test-key-for-local-mock", GEMINI_BASE_URL: BACKEND, AI_MODEL: "gemini-test-flash" }
           : { AI_PROVIDER: "anthropic", ANTHROPIC_API_KEY: "test-key-for-local-mock", ANTHROPIC_BASE_URL: BACKEND, AI_MODEL: "claude-opus-5-5" }),
         AI_RATE_LIMIT_PER_HOUR: "50",
+        // Gmail submission against the local Google emulator (test-only values).
+        GOOGLE_OAUTH_CLIENT_ID: TEST_GOOGLE_CLIENT_ID,
+        GOOGLE_OAUTH_CLIENT_SECRET: TEST_GOOGLE_CLIENT_SECRET,
+        GOOGLE_OAUTH_AUTH_URL: `${BACKEND}/o/oauth2/v2/auth`,
+        GOOGLE_OAUTH_TOKEN_URL: `${BACKEND}/token`,
+        GOOGLE_OAUTH_REVOKE_URL: `${BACKEND}/revoke`,
+        GMAIL_API_BASE_URL: BACKEND,
+        EMAIL_TOKEN_ENCRYPTION_KEY: "dGVzdC1vbmx5LWtleS1mb3ItZTJlLXRlc3RzLTMyYnk=",
+        CRON_SECRET: "test-cron-secret",
         NEXT_TELEMETRY_DISABLED: "1",
       },
     },

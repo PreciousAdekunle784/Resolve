@@ -2,7 +2,8 @@
 
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
+import { useState } from "react";
+import { CopyButton } from "@/components/forms/copy-button";
 import { errorsFor, FormMessage } from "@/components/forms/form-message";
 import { useFormAction } from "@/components/forms/use-form-action";
 import { Alert } from "@/components/ui/alert";
@@ -92,31 +93,6 @@ function GenerateButtons({
   );
 }
 
-function CopyButton({ text, label }: { text: string; label: string }) {
-  const [copied, setCopied] = useState<"ok" | "fail" | null>(null);
-  useEffect(() => {
-    if (!copied) return;
-    const t = setTimeout(() => setCopied(null), 2500);
-    return () => clearTimeout(t);
-  }, [copied]);
-  return (
-    <Button
-      variant="secondary"
-      size="sm"
-      onClick={async () => {
-        try {
-          await navigator.clipboard.writeText(text);
-          setCopied("ok");
-        } catch {
-          setCopied("fail");
-        }
-      }}
-    >
-      {copied === "ok" ? "Copied" : copied === "fail" ? "Copy failed — select the text manually" : label}
-    </Button>
-  );
-}
-
 function DraftEditor({ caseId, draft, warnings }: { caseId: string; draft: ComplaintDraftRow; warnings: string[] }) {
   const save = useFormAction(saveComplaintAction);
   const approve = useFormAction(approveComplaintAction);
@@ -197,9 +173,13 @@ function DraftEditor({ caseId, draft, warnings }: { caseId: string; draft: Compl
             {dirty ? <p className="text-xs text-ink-500">Save your changes before approving.</p> : null}
           </form>
         ) : (
-          <Alert tone="success" title="Approved — now send it yourself">
-            Send this complaint to {"your institution"} through its official complaint channel (email, branch, website form or
-            app). Then <Link href={`/cases/${caseId}?tab=tracking`} className="font-medium text-brand-700 hover:underline">record the submission</Link> so you can track it.
+          <Alert
+            tone="success"
+            title="Approved — ready to submit"
+            action={<Link href={`/cases/${caseId}?tab=submit`} className={buttonClasses({ size: "sm" })}>Submit to your bank</Link>}
+          >
+            Send it from your own Gmail or submit it on your institution&apos;s website with Resolve&apos;s help. If you send it another way (branch, letter or app),{" "}
+            <Link href={`/cases/${caseId}?tab=tracking`} className="font-medium text-brand-700 hover:underline">record the submission</Link> so you can track it.
           </Alert>
         )}
       </CardBody>

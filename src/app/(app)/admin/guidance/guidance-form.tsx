@@ -10,11 +10,17 @@ import type { GuidanceRow } from "@/lib/types";
 import { saveGuidanceAction } from "./actions";
 
 export function GuidanceForm({ g }: { g?: GuidanceRow }) {
-  const { state, pending, onSubmit, successKey } = useFormAction(saveGuidanceAction);
+  const form = useFormAction(saveGuidanceAction);
+  // Re-mount the fields after a successful "add" so every input (and its state) resets.
+  return <GuidanceFields key={g ? g.id : form.successKey} g={g} form={form} />;
+}
+
+function GuidanceFields({ g, form }: { g?: GuidanceRow; form: ReturnType<typeof useFormAction> }) {
+  const { state, pending, onSubmit } = form;
   const [status, setStatus] = useState<string>(g?.status ?? "unverified");
   const err = (f: string) => errorsFor(state, f);
   return (
-    <form key={g ? g.id : successKey} onSubmit={onSubmit} className="space-y-4" noValidate>
+    <form onSubmit={onSubmit} className="space-y-4" noValidate>
       <input type="hidden" name="id" value={g?.id ?? ""} />
       <FormMessage state={state} />
       <div className="grid gap-4 sm:grid-cols-2">

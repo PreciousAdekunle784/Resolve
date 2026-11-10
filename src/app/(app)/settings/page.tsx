@@ -1,18 +1,35 @@
 import type { Metadata } from "next";
 import { DownloadStatementButton } from "@/components/app/download-statement";
+import { EmailConnectionPanel } from "@/components/app/email-connection";
 import { Alert } from "@/components/ui/alert";
 import { Card, CardBody, CardHeader } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/misc";
 import { aiDataUseNotice, getAIProviderInfo } from "@/lib/ai/provider-info";
 import { requireOnboardedUser } from "@/lib/auth";
 import { formatDate } from "@/lib/format";
+import { isEmailSubmissionConfigured } from "@/lib/email/google";
+import { createClient } from "@/lib/supabase/server";
 import { isAdminClientConfigured } from "@/lib/supabase/admin";
+import type { EmailConnectionRow } from "@/lib/types";
 import { DeleteAccountForm, NotificationsForm, PrivacyForm, ProfileForm } from "./settings-forms";
 
 export const metadata: Metadata = { title: "Settings" };
 
-export default async function SettingsPage() {
-  const { profile } = await requireOnboardedUser("/settings");
+const GMAIL_MESSAGES: Record<string, string> = {
+  denied: "You didn't give Resolve permission, so Gmail wasn't connected.",
+  expired: "The connection took too long or was started in another tab. Please try again.",
+  send_permission_missing: "Resolve needs permission to send email. Please try again and allow it on Google's screen.",
+  no_refresh_token: "Google didn't grant lasting access. Remove Resolve from your Google account's third-party access page, then connect again.",
+  not_configured: "Sending by email isn't set up on this installation yet.",
+  google_error: "Google returned an error. Please try again.",
+};
+
+export default async function SettingsPage({ searchParams }: PageProps<"/settings">) {
+  const { user, profile } = await requireOnboardedUser("/settings");
+  const sp = await searchParams;
+  const supabase = await createClient();
+  const { data: connectionRow } = await supabase.from("email_connections").select("*").eq("user_id", user.id).maybeSingle();
+  const connection = connectionRow as EmailConnectionRow | null;
   return (
     <div className="mx-auto max-w-3xl space-y-6">
       <PageHeader title="Settings" description="Manage your profile, privacy choices and data." />
@@ -32,6 +49,22 @@ export default async function SettingsPage() {
           }
         />
         <CardBody><PrivacyForm profile={profile} aiNotice={aiDataUseNotice(getAIProviderInfo())} /></CardBody>
+      </Card>
+
+      <Card id="email" className="scroll-mt-24">
+        <CardHeader title="Connected email" description="The Gmail account Resolve sends your complaints from." />
+        <CardBody className="space-y-3">
+          {sp.gmail === "connected" ? <Alert tone="success">Gmail connected{connection ? ` as ${connection.email_address}` : ""}.</Alert> : null}
+          {sp.gmail === "error" ? <Alert tone="error" title="Gmail wasn't connected">{GMAIL_MESSAGES[String(sp.reason)] ?? GMAIL_MESSAGES.google_error}</Alert> : null}
+          <EmailConnectionPanel
+            configured={isEmailSubmissionConfigured()}
+            connection={
+              connection
+                ? { email: connection.email_address, canReadReplies: connection.can_read_replies, status: connection.status, connectedAt: connection.connected_at, lastUsedAt: connection.last_used_at }
+                : null
+            }
+          />
+        </CardBody>
       </Card>
 
       <Card id="notifications">

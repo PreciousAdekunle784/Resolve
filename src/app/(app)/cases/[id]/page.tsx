@@ -26,12 +26,33 @@ import {
 } from "@/lib/constants";
 import { formatDate, formatMoney } from "@/lib/format";
 import { getRelevantGuidance } from "@/lib/guidance";
+import { isEmailSubmissionConfigured } from "@/lib/email/google";
+import { discoverComplaintChannels, identifyBank } from "@/lib/orchestrator";
+import type { StoredRecoveryPlan } from "@/lib/orchestrator/schemas";
+import { LIVE_SUBMISSION_STATUSES } from "@/lib/submissions/labels";
+import { nextRequiredAction } from "@/lib/submissions/next-action";
 import { createClient } from "@/lib/supabase/server";
-import type { AiAnalysisRow, CaseEventRow, CaseRow, ComplaintDraftRow, EvidenceRow, GuidanceRow } from "@/lib/types";
+import type {
+  AiAnalysisRow,
+  AiToolRunRow,
+  BankChannelRow,
+  BankResponseRow,
+  CaseEventRow,
+  ComplaintDraftRow,
+  EmailConnectionRow,
+  EvidenceRow,
+  GuidanceRow,
+  SubmissionAuditRow,
+  SubmissionRow,
+} from "@/lib/types";
 import { AnalysisView, NoAnalysisYet, RunAnalysisButton } from "./analysis-panel";
 import { ComplaintBuilder } from "./complaint-builder";
 import { DeleteCase } from "./delete-case";
 import { TrackingPanels } from "./tracking-forms";
+import { BankResponses } from "./submit/bank-responses";
+import { RecoveryPlanCard } from "./submit/recovery-plan";
+import { SubmissionHistory } from "./submit/submission-history";
+import { SubmitFlow } from "./submit/submit-flow";
 
 export const metadata: Metadata = { title: "Case" };
 
@@ -40,30 +61,10 @@ const TABS = [
   { key: "evidence", label: "Evidence" },
   { key: "analysis", label: "AI analysis" },
   { key: "complaint", label: "Complaint" },
+  { key: "submit", label: "Submit to bank" },
   { key: "tracking", label: "Tracking & history" },
 ] as const;
 type Tab = (typeof TABS)[number]["key"];
-
-/** Deterministic "what's next" prompt based on the case's status. */
-function nextAction(c: CaseRow, hasApprovedDraft: boolean): { title: string; body: string; href: string; cta: string } {
-  switch (c.status) {
-    case "draft":
-      return hasApprovedDraft
-        ? { title: "Send your complaint", body: "Your complaint is approved. Send it through your institution's official channel, then record the submission.", href: `/cases/${c.id}?tab=tracking`, cta: "Record submission" }
-        : { title: "Prepare your complaint", body: "Review the analysis, then create and approve your complaint draft.", href: `/cases/${c.id}?tab=complaint`, cta: "Open complaint builder" };
-    case "submitted_to_institution":
-    case "awaiting_institution_response":
-      return { title: "Wait for a response — and follow up", body: "Record any reply you receive. Plan a follow-up date so the case doesn't go quiet.", href: `/cases/${c.id}?tab=tracking`, cta: "Update tracking" };
-    case "additional_information_required":
-      return { title: "Send the information requested", body: "Gather what your institution asked for, add it as evidence, and record when you sent it.", href: `/cases/${c.id}?tab=evidence`, cta: "Add evidence" };
-    case "ready_for_escalation":
-      return { title: "Check the official escalation route", body: "Read the official guidance before escalating, and keep your institution's complaint reference handy.", href: "/help/guidance", cta: "View official guidance" };
-    case "escalated_by_user":
-      return { title: "Track your escalation", body: "Record any responses and keep notes of every contact.", href: `/cases/${c.id}?tab=tracking`, cta: "Update tracking" };
-    default:
-      return { title: "This case is finished", body: "You can still view its full history and documents.", href: `/cases/${c.id}?tab=tracking`, cta: "View history" };
-  }
-}
 
 export default async function CasePage({ params, searchParams }: PageProps<"/cases/[id]">) {
   const { id } = await params;
@@ -74,13 +75,19 @@ export default async function CasePage({ params, searchParams }: PageProps<"/cas
   if (c.intake_status === "in_progress") redirect(`/cases/${id}/report`);
   const tab: Tab = TABS.find((t) => t.key === sp.tab)?.key ?? "overview";
 
-  const [evidenceRes, analysisRes, draftsRes, eventsRes] = await Promise.all([
+  const [evidenceRes, analysisRes, draftsRes, eventsRes, submissionsRes, responsesRes] = await Promise.all([
     supabase.from("evidence").select("*").eq("case_id", id).order("created_at"),
     supabase.from("ai_analyses").select("*").eq("case_id", id).eq("analysis_type", "case_analysis").order("created_at", { ascending: false }).limit(1),
     supabase.from("complaint_drafts").select("*").eq("case_id", id).order("version", { ascending: false }),
     supabase.from("case_events").select("*").eq("case_id", id).order("created_at", { ascending: true }),
+    supabase.from("complaint_submissions").select("*").eq("case_id", id).order("created_at", { ascending: false }),
+    supabase.from("bank_responses").select("*").eq("case_id", id).order("received_at", { ascending: false }),
   ]);
   if (evidenceRes.error || analysisRes.error || draftsRes.error || eventsRes.error) throw new Error("Could not load this case.");
+  // If the bank-submission migration hasn't been run on this database yet, the rest of the case still works.
+  const submissionsReady = !submissionsRes.error && !responsesRes.error;
+  const submissions = (submissionsRes.data ?? []) as SubmissionRow[];
+  const responses = (responsesRes.data ?? []) as BankResponseRow[];
   const evidence = (evidenceRes.data ?? []) as EvidenceRow[];
   const analysisRow = (analysisRes.data?.[0] as AiAnalysisRow | undefined) ?? null;
   const drafts = (draftsRes.data ?? []) as ComplaintDraftRow[];
@@ -101,9 +108,45 @@ export default async function CasePage({ params, searchParams }: PageProps<"/cas
   const draftWarnings = currentDraft
     ? findUnsupportedDetails(`${currentDraft.subject}\n${currentDraft.content}`, confirmedFactTexts(c, profile, evidence))
     : [];
-  const next = nextAction(c, currentDraft?.status === "approved");
+  const next = nextRequiredAction({ c, hasApprovedDraft: currentDraft?.status === "approved", submissions, responses });
   const aiAvailable = isAIConfigured();
   const title = c.issue_category ? ISSUE_CATEGORY_INFO[c.issue_category].label : "Case";
+
+  // Submission tab: bank identification and channel discovery run through the orchestration tools.
+  let submitData: {
+    bank: { id: string; name: string } | null;
+    channels: BankChannelRow[];
+    connection: EmailConnectionRow | null;
+    audit: SubmissionAuditRow[];
+    plan: AiToolRunRow | null;
+  } | null = null;
+  if (tab === "submit" && submissionsReady) {
+    const toolCtx = { supabase, userId: user.id, profile, c };
+    const bank = await identifyBank(toolCtx);
+    const [channels, connectionRes, auditRes, planRes] = await Promise.all([
+      discoverComplaintChannels(toolCtx, bank.bank_id).catch(() => [] as BankChannelRow[]),
+      supabase.from("email_connections").select("*").eq("user_id", user.id).maybeSingle(),
+      submissions.length > 0
+        ? supabase.from("submission_audit_log").select("*").in("submission_id", submissions.map((s) => s.id)).order("created_at", { ascending: true })
+        : Promise.resolve({ data: [] }),
+      supabase.from("ai_tool_runs").select("*").eq("case_id", id).eq("tool", "recommend_recovery").eq("status", "succeeded").order("created_at", { ascending: false }).limit(1),
+    ]);
+    submitData = {
+      bank: bank.bank_id && bank.bank_name ? { id: bank.bank_id, name: bank.bank_name } : null,
+      channels,
+      connection: (connectionRes.data as EmailConnectionRow | null) ?? null,
+      audit: (auditRes.data ?? []) as SubmissionAuditRow[],
+      plan: ((planRes.data ?? [])[0] as AiToolRunRow | undefined) ?? null,
+    };
+  }
+  const GMAIL_ERRORS: Record<string, string> = {
+    denied: "You didn't give Resolve permission, so Gmail wasn't connected.",
+    expired: "The connection took too long or was started in another tab. Please try again.",
+    send_permission_missing: "Resolve needs permission to send email. Please try again and tick that box on Google's screen.",
+    no_refresh_token: "Google didn't grant lasting access. Remove Resolve from your Google account's third-party access page, then connect again.",
+    not_configured: "Sending by email isn't set up on this installation yet.",
+    google_error: "Google returned an error. Please try again.",
+  };
 
   return (
     <div className="space-y-6">
@@ -299,6 +342,52 @@ export default async function CasePage({ params, searchParams }: PageProps<"/cas
 
       {tab === "complaint" ? (
         <ComplaintBuilder caseId={c.id} drafts={drafts} warnings={draftWarnings} aiAvailable={aiAvailable} consent={profile.ai_processing_consent} />
+      ) : null}
+
+      {tab === "submit" && !submissionsReady ? (
+        <Alert tone="warning" title="Bank submission isn't available yet">
+          This installation&apos;s database hasn&apos;t been updated for bank submissions. You can still download your complaint as a PDF from the
+          Complaint tab and record your submission under Tracking. (Site owner: run supabase/migrations/20261110000004_bank_submissions.sql in the
+          Supabase SQL Editor.)
+        </Alert>
+      ) : null}
+
+      {tab === "submit" && submitData ? (
+        <div className="space-y-6">
+          {sp.gmail === "connected" ? <Alert tone="success">Gmail connected{submitData.connection ? ` as ${submitData.connection.email_address}` : ""}.</Alert> : null}
+          {sp.gmail === "error" ? <Alert tone="error" title="Gmail wasn't connected">{GMAIL_ERRORS[String(sp.reason)] ?? GMAIL_ERRORS.google_error}</Alert> : null}
+          <div className="grid gap-6 lg:grid-cols-[1.5fr_1fr]">
+            <div className="min-w-0 space-y-6">
+              <SubmitFlow
+                caseId={c.id}
+                caseNumber={c.case_number}
+                institutionName={c.institution_name}
+                bank={submitData.bank}
+                draft={currentDraft ? { id: currentDraft.id, version: currentDraft.version, subject: currentDraft.subject, content: currentDraft.content, approved: currentDraft.status === "approved" } : null}
+                channels={submitData.channels}
+                connection={submitData.connection ? { email: submitData.connection.email_address, canReadReplies: submitData.connection.can_read_replies, status: submitData.connection.status } : null}
+                emailConfigured={isEmailSubmissionConfigured()}
+                evidence={evidence.map((e) => ({ id: e.id, name: e.original_filename, size: e.file_size, description: e.description }))}
+                alreadySentTo={submissions.filter((s) => s.draft_id === currentDraft?.id && LIVE_SUBMISSION_STATUSES.includes(s.status)).map((s) => s.recipient.toLowerCase())}
+                aiAvailable={aiAvailable}
+                consent={profile.ai_processing_consent}
+                customerDetails={[profile.full_name, profile.email, profile.phone, `Resolve case ${c.case_number}`].filter(Boolean).join("\n")}
+              />
+              <SubmissionHistory submissions={submissions} audit={submitData.audit} canReadReplies={Boolean(submitData.connection?.can_read_replies && submitData.connection.status === "active")} />
+              <BankResponses caseId={c.id} caseStatus={c.status} responses={responses} aiUsable={aiAvailable && profile.ai_processing_consent} />
+            </div>
+            <div className="space-y-6">
+              <RecoveryPlanCard
+                caseId={c.id}
+                next={next}
+                plan={(submitData.plan?.output as unknown as StoredRecoveryPlan | null) ?? null}
+                planDate={submitData.plan?.created_at ?? null}
+                guidance={Object.fromEntries(guidance.map((g) => [g.id, { title: g.title, url: g.source_url, status: g.status }]))}
+                aiUsable={aiAvailable && profile.ai_processing_consent}
+              />
+            </div>
+          </div>
+        </div>
       ) : null}
 
       {tab === "tracking" ? (

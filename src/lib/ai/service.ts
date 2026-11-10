@@ -20,7 +20,7 @@ import {
 
 const MAX_IMAGE_BYTES_FOR_AI = 5 * 1024 * 1024; // provider limit for images
 
-type UsageKind = "case_analysis" | "evidence_extraction" | "complaint_generation";
+type UsageKind = "case_analysis" | "evidence_extraction" | "complaint_generation" | "complaint_review" | "response_analysis" | "recovery_plan";
 
 /** Checks configuration, the user's consent and the per-user rate limit. */
 export async function ensureAIAllowed(supabase: SupabaseClient, profile: Profile, kind: UsageKind) {

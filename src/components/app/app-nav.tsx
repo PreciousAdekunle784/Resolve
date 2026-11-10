@@ -34,7 +34,12 @@ function groups(isAdmin: boolean): NavGroup[] {
       title: "Account",
       items: [
         { href: "/settings", label: "Settings", icon: ICONS.settings },
-        ...(isAdmin ? [{ href: "/admin/guidance", label: "Admin: guidance", icon: ICONS.admin }] : []),
+        ...(isAdmin
+          ? [
+              { href: "/admin/guidance", label: "Admin: guidance", icon: ICONS.admin },
+              { href: "/admin/bank-channels", label: "Admin: bank contacts", icon: ICONS.admin },
+            ]
+          : []),
       ],
     },
   ];

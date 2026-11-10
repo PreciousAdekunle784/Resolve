@@ -1,10 +1,10 @@
 import { z } from "zod";
 import { isSameOrigin, jsonError, jsonOk, readJson, requireApiUser } from "@/lib/api";
 import { AIError } from "@/lib/ai/errors";
-import { ensureAIAllowed, generateComplaint } from "@/lib/ai/service";
 import { getProfile } from "@/lib/auth";
 import { addCaseEvent, findOwnedCase } from "@/lib/cases";
 import { buildTemplateComplaint } from "@/lib/complaint-template";
+import { generateComplaintTool } from "@/lib/orchestrator";
 import { createClient } from "@/lib/supabase/server";
 import type { EvidenceRow } from "@/lib/types";
 
@@ -34,8 +34,7 @@ export async function POST(request: Request, ctx: RouteContext<"/api/cases/[id]/
   let warnings: string[] = [];
   try {
     if (parsed.data.mode === "ai") {
-      await ensureAIAllowed(supabase, profile, "complaint_generation");
-      const result = await generateComplaint(supabase, auth.user.id, c, profile);
+      const result = await generateComplaintTool({ supabase, userId: auth.user.id, profile, c });
       subject = result.draft.subject;
       content = result.draft.body;
       model = result.model;

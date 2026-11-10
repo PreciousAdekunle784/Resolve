@@ -54,3 +54,7 @@ To switch AI providers, set `AI_PROVIDER` (`gemini` or `anthropic`). To add anot
 ## Database
 
 See `supabase/migrations/20261108000001_initial_schema.sql`. Tables: `profiles`, `cases`, `evidence`, `case_events`, `ai_analyses`, `complaint_drafts`, `guidance_sources`, plus `ai_usage_events` (rate limiting). All have RLS, foreign keys with `on delete cascade` to the auth user, CHECK constraints for enums and lengths, and indexes for the dashboard queries.
+
+## Bank submissions
+
+Approved complaints can be sent from the user's own Gmail account, or submitted on the bank's website with guidance. An AI orchestration layer (`src/lib/orchestrator`) runs predefined, audited tools: bank identification, channel discovery, complaint generation, validation, email preparation, reply analysis and recovery planning. A submission engine (`src/lib/submissions/engine.ts`) handles idempotency, atomic claims, honest outcome states and reconciliation. A daily scheduled job checks for replies. See [SUBMISSIONS.md](SUBMISSIONS.md) for the full design, setup and limitations.

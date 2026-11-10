@@ -21,6 +21,7 @@ Resolve is an AI-powered financial recovery assistant for people and small busin
 | AI analysis | Reads evidence, identifies the likely category, extracts facts, finds missing and conflicting details, asks follow-up questions, suggests next steps and evidence, and links official guidance. Every fact is labelled by source. Resolve's own checks downgrade anything it can't confirm to "Unverified" |
 | Review & correct | Confirm or reject facts read from documents, answer follow-up questions, edit any case detail, mark the analysis reviewed |
 | Complaint builder | AI draft or no-AI template built only from confirmed facts, `[ADD: …]` placeholders for missing details, warnings for unconfirmed details, editing, versions, copy, PDF export, explicit user approval |
+| Submit to bank | Send the approved complaint from the user's own Gmail (OAuth, explicit authorisation, PDF + chosen evidence attached), or a guided submission on the bank's website. Admin-curated, verified bank contact channels. Pre-send checks (placeholders, PINs/OTPs/card numbers). Duplicate and replay protection. Honest statuses ("Sent" only when Gmail confirms). Retry and reconciliation. Reply detection in the Gmail thread, AI explanation of replies, AI recovery plan, next-action guidance. See [`docs/SUBMISSIONS.md`](docs/SUBMISSIONS.md) |
 | Tracking | Record submission (date, channel, reference), institution responses, status changes, follow-up dates, notes and outcome. Every status change is logged automatically. Append-only timeline |
 | Guidance engine | Guidance records with country, category, source URL, dates and verification status. Admin screen to add and verify records |
 | Settings | Profile, AI consent on/off, notification preferences (saved; email sending not built yet), PDF account statement download, permanent account deletion |
@@ -30,6 +31,8 @@ Resolve is an AI-powered financial recovery assistant for people and small busin
 ### Not yet available (shown clearly in the app)
 
 - **Email notifications.** Preferences are saved, but no emails are sent yet. Due follow-ups appear on the dashboard instead.
+- **Sending by email** needs Google OAuth credentials (see [`docs/SUBMISSIONS.md`](docs/SUBMISSIONS.md#set-it-up-one-time)). Without them, users can still download the PDF or use the guided website submission. Public Gmail use needs Google's app verification.
+- **Direct bank APIs and automated portal filling** aren't available. No bank offers a public complaint API, and portal automation needs a separate worker. The interfaces and requirements are documented.
 - **Verified official guidance.** The four CBN sources are included as links but marked *Not yet verified by Resolve* (see [Official guidance](#official-guidance-important)).
 
 ---
@@ -70,7 +73,8 @@ npm install
 ### 3. Create a Supabase project (free)
 
 1. Sign up at [supabase.com](https://supabase.com) and click **New project**. Choose a region close to your users and save the database password somewhere safe.
-2. When the project is ready, open **SQL Editor → New query**. Paste in the whole of `supabase/setup.sql` and click **Run**. Run it once only, on a new project. It contains the three files in `supabase/migrations/`, in order.
+2. When the project is ready, open **SQL Editor → New query**. Paste in the whole of `supabase/setup.sql` and click **Run**. Run it once only, on a new project. It contains all the files in `supabase/migrations/`, in order.
+   **Already set up Resolve before?** Run only the newer migration files you haven't run yet. For the bank submission feature, that's `supabase/migrations/20261110000004_bank_submissions.sql`.
 
    *(If you use the Supabase CLI instead, `supabase link` then `supabase db push` applies the same migration files.)*
 3. Open **Authentication → URL Configuration**:
@@ -147,7 +151,7 @@ Sign out and back in. An **Admin: guidance** link appears in the sidebar.
 
 1. Push the code to GitHub (already done for this repository).
 2. Sign in to [vercel.com](https://vercel.com) with GitHub. Click **Add New → Project** and import the `Resolve` repository.
-3. Under **Environment Variables**, add everything from your `.env.local`: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `AI_PROVIDER` and your AI key. You don't need a `NEXT_PUBLIC_` prefix. `SITE_URL` is optional on Vercel, because the production address is detected automatically.
+3. Under **Environment Variables**, add everything from your `.env.local`: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `AI_PROVIDER` and your AI key. To send complaints by email, also add `GOOGLE_OAUTH_CLIENT_ID`, `GOOGLE_OAUTH_CLIENT_SECRET`, `EMAIL_TOKEN_ENCRYPTION_KEY` and `CRON_SECRET` (see `docs/SUBMISSIONS.md`). You don't need a `NEXT_PUBLIC_` prefix. `SITE_URL` is optional on Vercel, because the production address is detected automatically.
 4. Click **Deploy**.
 5. In Supabase **Authentication → URL Configuration**, change the **Site URL** to your Vercel URL and add `https://your-vercel-url/auth/confirm` to the redirect URLs.
 6. In Supabase, set up a custom SMTP provider (Authentication → Emails). The built-in sender is heavily rate-limited and only for testing.

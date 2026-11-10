@@ -4,6 +4,7 @@ import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { getCurrentUser } from "@/lib/auth";
 import { EVIDENCE_BUCKET } from "@/lib/constants";
+import { disconnectGmail } from "@/lib/email/connections";
 import { createAdminClient, isAdminClientConfigured } from "@/lib/supabase/admin";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/types";
@@ -98,6 +99,9 @@ export async function deleteAccountAction(_prev: ActionResult | null, formData: 
     const { error } = await admin.storage.from(EVIDENCE_BUCKET).remove(unique.slice(i, i + 100));
     if (error) return { ok: false, error: "We couldn't delete your files. Nothing else was deleted — please try again." };
   }
+
+  // Revoke Resolve's Gmail access at Google (best effort; the stored tokens are deleted with the account either way).
+  await disconnectGmail(user.id).catch(() => undefined);
 
   // 2. Delete the auth user; database rows cascade.
   const { error: deleteError } = await admin.auth.admin.deleteUser(user.id);

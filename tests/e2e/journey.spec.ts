@@ -1,17 +1,15 @@
-import { expect, test, type APIResponse, type Browser, type Page } from "@playwright/test";
+import { expect, test, type APIResponse } from "@playwright/test";
 import { execFileSync } from "node:child_process";
 import { mkdtempSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
+import { BACKEND, completeOnboarding, FIXTURES, login, newPage, PASSWORD, register } from "./helpers";
 
 /**
  * Full user journey through Resolve, running against the local test backend
  * (real PostgreSQL + RLS, emulated Supabase APIs, deterministic fake AI).
  */
 
-const BACKEND = "http://localhost:54321";
-const PASSWORD = "Resolve-test-2026";
-const FIXTURES = path.join(process.cwd(), "tests/e2e/fixtures");
 const userA = { name: "Ada Okafor", email: `ada.${Date.now()}@example.com` };
 const userB = { name: "Bayo Adeyemi", email: `bayo.${Date.now()}@example.com` };
 
@@ -36,38 +34,6 @@ async function statementText(res: APIResponse): Promise<string | null> {
 }
 
 test.describe.configure({ mode: "serial" });
-
-async function register(page: Page, user: { name: string; email: string }, from = "/register") {
-  await page.goto(from);
-  await page.getByLabel("Full name").fill(user.name);
-  await page.getByLabel("Email address").fill(user.email);
-  await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
-  await page.getByRole("checkbox", { name: /I agree to the terms/ }).check();
-  await page.getByRole("button", { name: "Create account" }).click();
-  await expect(page).toHaveURL(/\/onboarding/);
-}
-
-async function completeOnboarding(page: Page, opts: { aiConsent: boolean }) {
-  await expect(page.getByRole("heading", { name: "Welcome to Resolve" })).toBeVisible();
-  if (opts.aiConsent) await page.getByRole("checkbox", { name: /Allow AI analysis/ }).check();
-  await page.getByRole("checkbox", { name: /I understand that Resolve is an independent assistant/ }).check();
-  await page.getByRole("button", { name: "Continue to Resolve" }).click();
-}
-
-async function login(page: Page, email: string) {
-  await page.goto("/login");
-  await page.getByLabel("Email address").fill(email);
-  await page.getByLabel("Password", { exact: true }).fill(PASSWORD);
-  await page.getByRole("button", { name: "Sign in" }).click();
-  await expect(page).toHaveURL(/\/dashboard/);
-}
-
-async function newPage(browser: Browser) {
-  const context = await browser.newContext();
-  const page = await context.newPage();
-  page.on("dialog", (d) => d.accept());
-  return page;
-}
 
 test("public site, navigation and protected routes", async ({ page }) => {
   await page.goto("/");
@@ -244,7 +210,7 @@ test("complaint builder: generate, edit, version, approve, export", async ({ pag
 
   await page.getByRole("checkbox", { name: /I have read this complaint and confirm it is accurate/ }).check();
   await page.getByRole("button", { name: "Approve final draft" }).click();
-  await expect(page.getByText("Approved — now send it yourself")).toBeVisible();
+  await expect(page.getByText("Approved — ready to submit")).toBeVisible();
 
   const href = await page.getByRole("link", { name: "Download PDF" }).getAttribute("href");
   const pdf = await page.request.get(href!);

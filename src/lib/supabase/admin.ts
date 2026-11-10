@@ -5,7 +5,9 @@ import { getSupabaseUrl } from "@/lib/env";
 /**
  * PRIVILEGED Supabase client using the service-role (secret) key.
  * It BYPASSES Row Level Security, so it is only used for operations that
- * cannot be done as the user — currently only permanent account deletion.
+ * cannot be done as the user: permanent account deletion, reading encrypted
+ * Gmail tokens, and recording submission results that users must not be able
+ * to forge (see src/lib/submissions/engine.ts). Callers check ownership first.
  * Never import this file into client code.
  */
 export function getServiceRoleKey(): string | undefined {

@@ -140,3 +140,132 @@ export interface GuidanceRow {
 export type ActionResult<T = undefined> =
   | { ok: true; data?: T; message?: string }
   | { ok: false; error: string; fieldErrors?: Record<string, string[] | undefined> };
+
+// ---------------------------------------------------------------------------
+// Bank submissions (see supabase/migrations/20261110000004_bank_submissions.sql)
+// ---------------------------------------------------------------------------
+
+export type BankChannelType = "email" | "web_portal" | "api" | "phone";
+export type BankChannelStatus = "verified" | "unverified" | "outdated" | "archived";
+
+export interface BankChannelRow {
+  id: string;
+  bank_id: string;
+  bank_name: string;
+  channel_type: BankChannelType;
+  value: string;
+  label: string;
+  purpose: "complaints" | "customer_care" | "escalation";
+  source_url: string;
+  status: BankChannelStatus;
+  verified_at: string | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface EmailConnectionRow {
+  id: string;
+  user_id: string;
+  provider: "gmail";
+  email_address: string;
+  scopes: string[];
+  can_read_replies: boolean;
+  status: "active" | "reauthorization_required";
+  last_error: string | null;
+  connected_at: string;
+  last_used_at: string | null;
+  updated_at: string;
+}
+
+export type SubmissionMethod = "email" | "guided_portal" | "api";
+export type SubmissionStatus =
+  | "queued"
+  | "sending"
+  | "sent"
+  | "failed"
+  | "unknown"
+  | "awaiting_user_confirmation"
+  | "confirmed_by_user"
+  | "cancelled";
+
+export interface SubmissionAttachment {
+  kind: "complaint_pdf" | "evidence";
+  filename: string;
+  evidence_id: string | null;
+  size: number;
+}
+
+export interface SubmissionRow {
+  id: string;
+  case_id: string;
+  user_id: string;
+  draft_id: string | null;
+  draft_version: number;
+  method: SubmissionMethod;
+  channel_id: string | null;
+  recipient: string;
+  recipient_source: "verified_directory" | "unverified_directory" | "user_provided";
+  subject: string;
+  body: string;
+  attachments: SubmissionAttachment[];
+  idempotency_key: string;
+  status: SubmissionStatus;
+  authorized_at: string;
+  authorization_statement: string;
+  provider: "gmail" | null;
+  sender_address: string | null;
+  message_id_header: string | null;
+  provider_message_id: string | null;
+  provider_thread_id: string | null;
+  attempt_count: number;
+  sending_started_at: string | null;
+  last_error: string | null;
+  sent_at: string | null;
+  user_confirmed_at: string | null;
+  user_reference: string | null;
+  last_checked_for_replies_at: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface SubmissionAuditRow {
+  id: number;
+  submission_id: string;
+  user_id: string;
+  action: string;
+  detail: Record<string, unknown>;
+  created_at: string;
+}
+
+export interface BankResponseRow {
+  id: string;
+  case_id: string;
+  user_id: string;
+  submission_id: string | null;
+  source: "email_reply" | "user_entered";
+  received_at: string;
+  from_address: string | null;
+  subject: string | null;
+  body_text: string;
+  provider_message_id: string | null;
+  analysis: Record<string, unknown> | null;
+  analysis_model: string | null;
+  analyzed_at: string | null;
+  user_reviewed_at: string | null;
+  created_at: string;
+}
+
+export interface AiToolRunRow {
+  id: string;
+  user_id: string;
+  case_id: string | null;
+  tool: string;
+  status: "succeeded" | "failed";
+  model: string | null;
+  input: Record<string, unknown>;
+  output: Record<string, unknown> | null;
+  error_code: string | null;
+  duration_ms: number | null;
+  created_at: string;
+}
