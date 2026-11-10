@@ -3,7 +3,7 @@ import { jsonError, jsonOk, requireApiUser } from "@/lib/api";
 import { rankFlashModels } from "@/lib/ai/gemini";
 import { getConfiguredProviderName, getGeminiApiKey } from "@/lib/ai/provider-info";
 
-export const maxDuration = 120;
+export const maxDuration = 200;
 
 const withTimeout = <T,>(p: Promise<T>, ms: number) =>
   Promise.race([p, new Promise<never>((_, reject) => setTimeout(() => reject(new Error(`timed out after ${ms / 1000}s`)), ms))]);
@@ -20,7 +20,7 @@ function describe(e: unknown): string {
  * which Gemini models the key can use, and a timed test request. Returns no
  * secrets. Used to troubleshoot a deployment.
  */
-export async function GET() {
+export async function GET(request: Request) {
   const auth = await requireApiUser();
   if ("response" in auth) return auth.response;
   const provider = getConfiguredProviderName();
@@ -42,9 +42,15 @@ export async function GET() {
     report.listModels = { ok: false, error: describe(e) };
   }
 
-  const candidates = Array.from(
-    new Set([configuredModel, ...(((report.listModels as { flashCandidates?: string[] })?.flashCandidates ?? []).slice(0, 2))]),
-  );
+  // Optional ?models=a,b,c to test specific models (max 5).
+  const requested = (new URL(request.url).searchParams.get("models") ?? "")
+    .split(",")
+    .map((m) => m.trim())
+    .filter((m) => /^gemini-[a-z0-9.-]{1,60}$/i.test(m))
+    .slice(0, 5);
+  const candidates = requested.length
+    ? requested
+    : Array.from(new Set([configuredModel, ...(((report.listModels as { flashCandidates?: string[] })?.flashCandidates ?? []).slice(0, 2))]));
   const tests: Record<string, unknown>[] = [];
   for (const model of candidates) {
     const started = Date.now();
