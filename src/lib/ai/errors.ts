@@ -1,5 +1,7 @@
 export type AIErrorCode =
   | "not_configured"
+  | "provider_auth_failed"
+  | "model_unavailable"
   | "consent_required"
   | "rate_limited"
   | "provider_rate_limited"
@@ -12,7 +14,11 @@ export type AIErrorCode =
 
 const MESSAGES: Record<AIErrorCode, string> = {
   not_configured:
-    "AI features aren't set up yet (no AI API key configured). You can still use Resolve manually, including a template complaint.",
+    "AI features aren't set up yet (no AI API key found). You can still use Resolve manually, including a template complaint. (Site owner: set AI_PROVIDER=gemini and GEMINI_API_KEY, then redeploy.)",
+  provider_auth_failed:
+    "The AI service rejected this site's API key, so AI features are unavailable. You can still use Resolve manually, including a template complaint. (Site owner: check the API key value, then redeploy.)",
+  model_unavailable:
+    "The AI model this site is set to use isn't available. You can still use Resolve manually, including a template complaint. (Site owner: set AI_MODEL to a model code listed in Google AI Studio, or leave it empty, then redeploy.)",
   consent_required: "AI analysis needs your permission. You can turn it on in Settings → Privacy.",
   rate_limited: "You've used AI features a lot in a short time. Please wait a few minutes and try again.",
   provider_rate_limited: "The AI service is busy right now. Please try again in a minute.",
@@ -40,6 +46,8 @@ export class AIError extends Error {
   get httpStatus(): number {
     switch (this.code) {
       case "not_configured":
+      case "provider_auth_failed":
+      case "model_unavailable":
         return 503;
       case "consent_required":
         return 403;

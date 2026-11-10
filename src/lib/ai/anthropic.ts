@@ -88,7 +88,11 @@ function mapError(error: unknown): AIError {
   if (error instanceof Anthropic.APIConnectionError) return new AIError("provider_unavailable");
   if (error instanceof Anthropic.AuthenticationError || error instanceof Anthropic.PermissionDeniedError) {
     console.error("[ai] Anthropic authentication/permission error — check ANTHROPIC_API_KEY.");
-    return new AIError("not_configured");
+    return new AIError("provider_auth_failed");
+  }
+  if (error instanceof Anthropic.NotFoundError) {
+    console.error("[ai] Anthropic model not found — check AI_MODEL.");
+    return new AIError("model_unavailable");
   }
   if (error instanceof Anthropic.RateLimitError) return new AIError("provider_rate_limited");
   if (error instanceof Anthropic.BadRequestError) {

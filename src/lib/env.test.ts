@@ -78,3 +78,26 @@ describe("Supabase settings", () => {
     expect(getSiteUrl()).toBe("https://resolve-xyz.vercel.app");
   });
 });
+
+describe("AI provider selection", () => {
+  const AI = ["AI_PROVIDER", "GEMINI_API_KEY", "GOOGLE_API_KEY", "GOOGLE_GENERATIVE_AI_API_KEY", "ANTHROPIC_API_KEY"];
+  const set = (v: Record<string, string>) => {
+    for (const n of AI) vi.stubEnv(n, "");
+    for (const [k, val] of Object.entries(v)) vi.stubEnv(k, val);
+  };
+  it("accepts AI_PROVIDER in any capitalisation", async () => {
+    const { getConfiguredProviderName } = await import("./ai/provider-info");
+    set({ AI_PROVIDER: " Gemini ", GEMINI_API_KEY: "k" });
+    expect(getConfiguredProviderName()).toBe("gemini");
+    set({ AI_PROVIDER: "ANTHROPIC" });
+    expect(getConfiguredProviderName()).toBe("anthropic");
+  });
+  it("picks Gemini automatically when only a Gemini key is set", async () => {
+    const { getConfiguredProviderName, getGeminiApiKey } = await import("./ai/provider-info");
+    set({ GOOGLE_API_KEY: ' "abc" ' });
+    expect(getConfiguredProviderName()).toBe("gemini");
+    expect(getGeminiApiKey()).toBe("abc");
+    set({});
+    expect(getConfiguredProviderName()).toBe("anthropic");
+  });
+});

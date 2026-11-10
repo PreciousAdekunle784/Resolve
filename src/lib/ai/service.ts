@@ -138,7 +138,7 @@ export async function extractEvidence(
     const err = error instanceof AIError ? error : new AIError("invalid_response");
     await setStatus("failed", err.userMessage.slice(0, 500));
     // Configuration/limit problems affect every file — stop and report them.
-    if (["not_configured", "provider_rate_limited", "rate_limited"].includes(err.code)) throw err;
+    if (["not_configured", "provider_auth_failed", "model_unavailable", "provider_rate_limited", "rate_limited"].includes(err.code)) throw err;
     return null;
   }
 }

@@ -89,7 +89,7 @@ describe("AnthropicProvider structured output validation", () => {
     await expect(outage.provider.generateStructured(request)).rejects.toMatchObject({ code: "provider_unavailable" });
     const auth = providerWith(() => ({ status: 401, json: { type: "error", error: { type: "authentication_error", message: "invalid x-api-key" } } }));
     const err = await auth.provider.generateStructured(request).catch((e) => e);
-    expect(err.code).toBe("not_configured");
+    expect(err.code).toBe("provider_auth_failed");
     expect(err.userMessage).not.toMatch(/x-api-key/);
   });
 });

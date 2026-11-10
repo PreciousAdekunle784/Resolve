@@ -3,7 +3,7 @@ import { AnthropicProvider } from "./anthropic";
 import { AIError } from "./errors";
 import { GeminiProvider } from "./gemini";
 import type { AIProvider } from "./provider";
-import { getConfiguredProviderName } from "./provider-info";
+import { getAnthropicApiKey, getConfiguredProviderName, getGeminiApiKey } from "./provider-info";
 
 /**
  * Returns the configured AI provider. AI runs only on the server; API keys are
@@ -23,29 +23,27 @@ import { getConfiguredProviderName } from "./provider-info";
  *   GEMINI_PAID_TIER     "true" only if billing is enabled (changes the privacy notice)
  */
 export function isAIConfigured(): boolean {
-  return getConfiguredProviderName() === "gemini"
-    ? Boolean(process.env.GEMINI_API_KEY)
-    : Boolean(process.env.ANTHROPIC_API_KEY);
+  return getConfiguredProviderName() === "gemini" ? Boolean(getGeminiApiKey()) : Boolean(getAnthropicApiKey());
 }
 
 export function getAIProvider(): AIProvider {
   if (getConfiguredProviderName() === "gemini") {
-    const apiKey = process.env.GEMINI_API_KEY;
+    const apiKey = getGeminiApiKey();
     if (!apiKey) throw new AIError("not_configured");
     return new GeminiProvider({
       apiKey,
-      model: process.env.AI_MODEL || "gemini-flash-latest",
+      model: process.env.AI_MODEL?.trim() || "gemini-flash-latest",
       timeoutMs: 110_000,
       baseUrl: process.env.GEMINI_BASE_URL || undefined,
     });
   }
 
-  const apiKey = process.env.ANTHROPIC_API_KEY;
+  const apiKey = getAnthropicApiKey();
   if (!apiKey) throw new AIError("not_configured");
   const effort = (["low", "medium", "high", "xhigh", "max"] as const).find((e) => e === process.env.AI_EFFORT) ?? "medium";
   return new AnthropicProvider({
     apiKey,
-    model: process.env.AI_MODEL || "claude-opus-5-5",
+    model: process.env.AI_MODEL?.trim() || "claude-opus-5-5",
     effort,
     useFallbacks: (process.env.AI_REFUSAL_FALLBACK ?? "default") !== "off",
     timeoutMs: 110_000,

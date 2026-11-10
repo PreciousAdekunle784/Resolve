@@ -122,11 +122,11 @@ function mapError(error: unknown): AIError {
     if (error.status === 429) return new AIError("provider_rate_limited");
     if (error.status === 401 || error.status === 403 || msg.includes("api key not valid") || msg.includes("api_key_invalid")) {
       console.error("[ai] Gemini rejected the API key — check GEMINI_API_KEY.");
-      return new AIError("not_configured");
+      return new AIError("provider_auth_failed");
     }
     if (error.status === 404) {
       console.error("[ai] Gemini model not found — set AI_MODEL to a model code listed in Google AI Studio.");
-      return new AIError("not_configured");
+      return new AIError("model_unavailable");
     }
     if (error.status === 400 && (msg.includes("too large") || msg.includes("exceeds") || msg.includes("too long"))) {
       return new AIError("input_too_large");

@@ -83,10 +83,10 @@ describe("GeminiProvider", () => {
     respond = () => err(400, "API key not valid. Please pass a valid API key.", "INVALID_ARGUMENT");
     const bad = await provider().generateStructured(request).catch((e) => e);
     expect(bad).toBeInstanceOf(AIError);
-    expect(bad.code).toBe("not_configured");
+    expect(bad.code).toBe("provider_auth_failed");
     expect(bad.userMessage).not.toMatch(/API key not valid/);
     respond = () => err(404, "models/gemini-test-flash is not found", "NOT_FOUND");
-    await expect(provider().generateStructured(request)).rejects.toMatchObject({ code: "not_configured" });
+    await expect(provider().generateStructured(request)).rejects.toMatchObject({ code: "model_unavailable" });
   });
 
   it("retries in plain JSON mode if the API rejects the schema", async () => {

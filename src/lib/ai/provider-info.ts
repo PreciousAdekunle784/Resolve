@@ -18,8 +18,27 @@ export interface AIProviderInfo {
   mayUseDataForTraining: boolean;
 }
 
+const cleanEnv = (v: string | undefined) => v?.trim().replace(/^["'`]+|["'`]+$/g, "").trim() || undefined;
+
+/** The Gemini API key (GEMINI_API_KEY, or the common alternatives GOOGLE_API_KEY / GOOGLE_GENERATIVE_AI_API_KEY). */
+export function getGeminiApiKey(): string | undefined {
+  return cleanEnv(process.env.GEMINI_API_KEY) ?? cleanEnv(process.env.GOOGLE_API_KEY) ?? cleanEnv(process.env.GOOGLE_GENERATIVE_AI_API_KEY);
+}
+
+export function getAnthropicApiKey(): string | undefined {
+  return cleanEnv(process.env.ANTHROPIC_API_KEY);
+}
+
+/**
+ * The AI provider to use. AI_PROVIDER is matched case-insensitively ("Gemini",
+ * "google" and "gemini" all work). If it isn't set, Gemini is chosen when only
+ * a Gemini key is present.
+ */
 export function getConfiguredProviderName(): AIProviderName {
-  return process.env.AI_PROVIDER === "gemini" ? "gemini" : "anthropic";
+  const chosen = cleanEnv(process.env.AI_PROVIDER)?.toLowerCase();
+  if (chosen === "gemini" || chosen === "google" || chosen === "google-gemini") return "gemini";
+  if (chosen === "anthropic" || chosen === "claude") return "anthropic";
+  return getGeminiApiKey() && !getAnthropicApiKey() ? "gemini" : "anthropic";
 }
 
 export function getAIProviderInfo(): AIProviderInfo {
