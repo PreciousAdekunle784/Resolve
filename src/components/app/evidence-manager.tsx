@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { EVIDENCE_MAX_FILE_BYTES, EVIDENCE_MAX_FILES_PER_CASE } from "@/lib/constants";
+import { getSupabasePublishableKey } from "@/lib/env";
 import { checkDeclaredFile } from "@/lib/files";
 import { formatDate, formatFileSize } from "@/lib/format";
 import type { EvidenceRow } from "@/lib/types";
@@ -36,7 +37,7 @@ function putWithProgress(signedUrl: string, file: File, onProgress: (pct: number
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", signedUrl);
     xhr.setRequestHeader("x-upsert", "false");
-    const key = process.env.NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY || process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+    const key = getSupabasePublishableKey();
     if (key) xhr.setRequestHeader("apikey", key);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));

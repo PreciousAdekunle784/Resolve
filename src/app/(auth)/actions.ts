@@ -2,7 +2,7 @@
 
 import { redirect } from "next/navigation";
 import { authErrorMessage, safeNextPath } from "@/lib/auth-errors";
-import { getSiteUrl, isSupabaseConfigured } from "@/lib/env";
+import { getSiteUrl, getSupabaseConfigProblems, isSupabaseConfigured, supabaseConfigHelp } from "@/lib/env";
 import { createClient } from "@/lib/supabase/server";
 import type { ActionResult } from "@/lib/types";
 import {
@@ -14,13 +14,15 @@ import {
   resetPasswordSchema,
 } from "@/lib/validation";
 
-const NOT_CONFIGURED: ActionResult = {
-  ok: false,
-  error: "Resolve is not connected to Supabase yet. Add the Supabase settings to .env.local (see README).",
-};
+function notConfigured(): ActionResult {
+  return {
+    ok: false,
+    error: `Resolve can't connect to its database yet. ${getSupabaseConfigProblems().join(" ")} ${supabaseConfigHelp()}`,
+  };
+}
 
 export async function loginAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return notConfigured();
   const parsed = loginSchema.safeParse(formDataToObject(formData));
   if (!parsed.success) return { ok: false, error: "Please check the highlighted fields.", fieldErrors: fieldErrors(parsed.error) };
 
@@ -32,7 +34,7 @@ export async function loginAction(_prev: ActionResult | null, formData: FormData
 }
 
 export async function registerAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return notConfigured();
   const parsed = registerSchema.safeParse(formDataToObject(formData));
   if (!parsed.success) return { ok: false, error: "Please check the highlighted fields.", fieldErrors: fieldErrors(parsed.error) };
 
@@ -61,7 +63,7 @@ export async function registerAction(_prev: ActionResult | null, formData: FormD
 }
 
 export async function forgotPasswordAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return notConfigured();
   const parsed = forgotPasswordSchema.safeParse(formDataToObject(formData));
   if (!parsed.success) return { ok: false, error: "Please check the highlighted fields.", fieldErrors: fieldErrors(parsed.error) };
 
@@ -81,7 +83,7 @@ export async function forgotPasswordAction(_prev: ActionResult | null, formData:
 }
 
 export async function resetPasswordAction(_prev: ActionResult | null, formData: FormData): Promise<ActionResult> {
-  if (!isSupabaseConfigured()) return NOT_CONFIGURED;
+  if (!isSupabaseConfigured()) return notConfigured();
   const parsed = resetPasswordSchema.safeParse(formDataToObject(formData));
   if (!parsed.success) return { ok: false, error: "Please check the highlighted fields.", fieldErrors: fieldErrors(parsed.error) };
 
