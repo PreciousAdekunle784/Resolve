@@ -21,7 +21,10 @@ export default function TermsPage() {
       <h2>What Resolve does not do</h2>
       <ul>
         <li>It does not reverse transactions or move money.</li>
-        <li>It does not submit complaints to institutions on your behalf.</li>
+        <li>
+          It does not submit complaints without your explicit authorisation. If you choose, Resolve sends a complaint you
+          have approved from your own connected email account; otherwise you submit it yourself.
+        </li>
         <li>It does not guarantee that a complaint will succeed or that money will be recovered.</li>
         <li>It does not provide legal or financial advice.</li>
       </ul>

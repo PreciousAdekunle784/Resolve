@@ -19,7 +19,7 @@ const steps = [
   },
   {
     title: "Prepare and track your complaint",
-    body: "Generate an editable complaint from facts you have confirmed, export it, send it yourself, and track every response in one timeline.",
+    body: "Generate an editable complaint from facts you have confirmed, send it from your own email or submit it on your bank's website, and track every response in one timeline.",
   },
 ];
 
@@ -43,7 +43,7 @@ const faqs = [
   },
   {
     q: "Does Resolve send complaints to my bank for me?",
-    a: "No. Resolve prepares a draft that you review, edit and approve. You then send it yourself through your institution's official channels and record the details in Resolve so you can track progress.",
+    a: "Only if you ask it to. After you review and approve your complaint, you can authorise Resolve to email it from your own Gmail account to your institution's official complaints address, so their reply comes straight to you. Or you can submit it yourself on their website or in a branch. Either way, Resolve records what happened so you can track progress.",
   },
   {
     q: "What information will you ask me for?",

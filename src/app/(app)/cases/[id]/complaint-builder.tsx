@@ -165,7 +165,7 @@ function DraftEditor({ caseId, draft, warnings }: { caseId: string; draft: Compl
             <p className="text-sm font-semibold text-ink-900">Approve this complaint</p>
             <label className="flex gap-3 text-sm text-ink-700">
               <Checkbox name="confirmAccurate" />
-              <span>I have read this complaint and confirm it is accurate. I understand Resolve will not send it for me.</span>
+              <span>I have read this complaint and confirm it is accurate. Resolve will only send it if I separately authorise that.</span>
             </label>
             <FieldError messages={errorsFor(approve.state, "confirmAccurate")} />
             <FormMessage state={approve.state && !approve.state.ok && errorsFor(approve.state, "confirmAccurate") ? null : approve.state} />
