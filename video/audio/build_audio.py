@@ -320,7 +320,7 @@ def main():
     env = np.clip(env / 0.05, 0, 1)
     att = int(0.12 * SR)
     env = np.convolve(env, np.ones(att) / att, mode="same")
-    duck = 1 - 0.65 * env
+    duck = 1 - 0.8 * env
 
     music_l = music * duck
     # A touch of stereo width for music and effects; narration stays centred.

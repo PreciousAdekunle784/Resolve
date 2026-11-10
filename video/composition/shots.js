@@ -5,7 +5,7 @@
 export const SHOTS = [
   // Scene 2 — Resolve, then the dashboard
   { clip: "landing", from: 0.2, to: 4.6, start: 11.2, dur: 4.4, cam: [[0, 720, 450, 0.95], [1, 720, 420, 1.03]] },
-  { clip: "dashboard", from: 0.3, to: 5.6, start: 15.3, dur: 4.3, cam: [[0, 780, 330, 1.02], [0.65, 760, 300, 1.2], [1, 640, 300, 1.15]] },
+  { clip: "dashboard", from: 0.3, to: 4.95, start: 15.3, dur: 4.3, cam: [[0, 780, 330, 1.02], [0.65, 760, 300, 1.2], [1, 640, 300, 1.15]] },
 
   // Scene 3 — report the problem
   { clip: "report", from: 0.4, to: 4.6, start: 19.4, dur: 2.0, cam: [[0, 760, 400, 1.3], [1, 840, 540, 1.25]] },
