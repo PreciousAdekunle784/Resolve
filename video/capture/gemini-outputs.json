@@ -1,0 +1,337 @@
+{
+  "captured_at": "2026-11-10T19:59:03.447Z",
+  "site": "https://resolve-finance.vercel.app",
+  "evidence_extraction": {
+    "analysis_type": "evidence_extraction",
+    "structured_result": {
+      "caveats": [
+        "A receipt or successful status is not definitive proof that the money has settled or reached the recipient account.",
+        "The recipient account number is partially masked (•••• 4417)."
+      ],
+      "summary": "The document is a transfer receipt from Northbridge Bank showing a successful transfer of ₦85,000.00 to Example Recipient at Example Microfinance Bank.",
+      "readable": true,
+      "status_shown": "Successful",
+      "document_type": "transfer_receipt",
+      "extracted_fields": [
+        {
+          "field": "institution_name",
+          "label": "Bank",
+          "confidence": "high",
+          "exact_text": "Northbridge Bank"
+        },
+        {
+          "field": "amount",
+          "label": "Amount",
+          "confidence": "high",
+          "exact_text": "85,000.00"
+        },
+        {
+          "field": "currency",
+          "label": "Currency",
+          "confidence": "high",
+          "exact_text": "₦"
+        },
+        {
+          "field": "recipient_name",
+          "label": "Recipient",
+          "confidence": "high",
+          "exact_text": "Example Recipient"
+        },
+        {
+          "field": "recipient_institution",
+          "label": "Bank",
+          "confidence": "high",
+          "exact_text": "Example Microfinance Bank"
+        },
+        {
+          "field": "recipient_account",
+          "label": "Account",
+          "confidence": "high",
+          "exact_text": "•••• 4417"
+        },
+        {
+          "field": "transaction_date",
+          "label": "Date",
+          "confidence": "high",
+          "exact_text": "8 Nov 2026, 2:12 PM"
+        },
+        {
+          "field": "transaction_reference",
+          "label": "Session ID",
+          "confidence": "high",
+          "exact_text": "000013261108141205184426937051"
+        },
+        {
+          "field": "transaction_status",
+          "label": "Status",
+          "confidence": "high",
+          "exact_text": "Successful"
+        }
+      ],
+      "sensitive_data_visible": false
+    },
+    "model_identifier": "gemini-3.6-flash"
+  },
+  "case_analysis": {
+    "analysis_type": "case_analysis",
+    "structured_result": {
+      "summary": "On 8 November 2026 at 14:12, a transfer of NGN 85,000.00 was initiated via the Northbridge Bank mobile banking app to Example Recipient at Example Microfinance Bank (account ending 4417). The app displayed a successful status and debited the sender's account, but the recipient reports the funds have not arrived. A call to customer care on 9 November 2026 yielded advice to wait 24 hours, but the issue remains unresolved.",
+      "conflicts": [],
+      "grounding": {
+        "checked_at": "2026-11-10T19:59:47.711Z",
+        "downgraded_facts": [
+          "Currency",
+          "Transaction Date & Time"
+        ],
+        "removed_guidance_ids": []
+      },
+      "key_facts": [
+        {
+          "label": "Amount",
+          "value": "NGN 85,000.00",
+          "source": "user_provided",
+          "case_field": "amount",
+          "source_detail": "Your report",
+          "normalized_value": "85000.00"
+        },
+        {
+          "label": "Currency",
+          "value": "NGN",
+          "source": "unverified",
+          "case_field": "currency",
+          "source_detail": "Your report (Resolve could not confirm this — please check it)",
+          "normalized_value": null
+        },
+        {
+          "label": "Transaction Date & Time",
+          "value": "8 Nov 2026, 14:12 WAT",
+          "source": "unverified",
+          "case_field": "transaction_date",
+          "source_detail": "Your report (Resolve could not confirm this — please check it)",
+          "normalized_value": "2026-11-08T14:12:00+01:00"
+        },
+        {
+          "label": "Transaction Reference / Session ID",
+          "value": "000013261108141205184426937051",
+          "source": "user_provided",
+          "case_field": "transaction_reference",
+          "source_detail": "Your report",
+          "normalized_value": null
+        },
+        {
+          "label": "Sending Institution",
+          "value": "Northbridge Bank",
+          "source": "user_provided",
+          "case_field": "institution_name",
+          "source_detail": "Your report",
+          "normalized_value": null
+        },
+        {
+          "label": "Payment Channel",
+          "value": "Mobile banking app",
+          "source": "user_provided",
+          "case_field": "payment_channel",
+          "source_detail": "Your report",
+          "normalized_value": null
+        },
+        {
+          "label": "Recipient Details",
+          "value": "Example Recipient, Example Microfinance Bank, account ending 4417",
+          "source": "user_provided",
+          "case_field": "recipient_details",
+          "source_detail": "Your report",
+          "normalized_value": null
+        },
+        {
+          "label": "Receipt Transaction Status",
+          "value": "Successful",
+          "source": "document_extracted",
+          "case_field": "none",
+          "source_detail": "evidence-transfer-receipt.png",
+          "normalized_value": null
+        }
+      ],
+      "next_steps": [
+        {
+          "title": "Log a formal complaint with Northbridge Bank",
+          "detail": "Contact Northbridge Bank through their official support email or in-app complaint channel. Provide the Session ID (000013261108141205184426937051) and request a formal complaint reference number."
+        },
+        {
+          "title": "Gather recipient's statement of account",
+          "detail": "Ask Example Recipient for a statement of account covering 8 November 2026 to the present date showing that the NGN 85,000.00 credit was not received."
+        },
+        {
+          "title": "Check official CBN channels if unresolved",
+          "detail": "If Northbridge Bank fails to resolve the issue, review the official Central Bank of Nigeria (CBN) portal directly to understand escalation steps."
+        }
+      ],
+      "important_cautions": [
+        "A transaction status of 'Successful' or a transfer receipt is not conclusive proof that funds settled into the recipient's account. Interbank delays can occur.",
+        "Never share sensitive account details such as your PIN, OTP, password, BVN, NIN, or full card number with anyone.",
+        "Beware of recovery scams. Resolve and legitimate bank officials will never charge fees or request private login details to help resolve your complaint."
+      ],
+      "category_assessment": {
+        "confidence": "high",
+        "explanation": "The user initiated an outbound transfer that was debited from their account, but the recipient has not received the funds after two days.",
+        "likely_category": "failed_or_pending_transfer",
+        "matches_selected_category": true
+      },
+      "follow_up_questions": [
+        {
+          "reason": "A complaint reference number is essential for tracking and official escalation with the bank.",
+          "question": "Did Northbridge Bank provide a formal ticket or complaint reference number when you contacted customer care on 9 November 2026?"
+        },
+        {
+          "reason": "A statement showing non-receipt serves as strong supporting evidence for Northbridge Bank to trace the interbank settlement.",
+          "question": "Can the recipient provide an account statement showing transactions from 8 November 2026 to date?"
+        }
+      ],
+      "guidance_references": [
+        {
+          "relevance": "Provides official CBN guidance on consumer complaints management (unverified content; check official source directly).",
+          "guidance_id": "41e9899d-76d1-454d-9287-09401edcaf87"
+        },
+        {
+          "relevance": "Provides CBN instructions on how to lodge complaints against financial institutions (unverified content; check official source directly).",
+          "guidance_id": "a5fa417b-102e-4240-9c09-b530ca4a40a1"
+        },
+        {
+          "relevance": "Links to the official CBN Consumer Complaints Portal for escalating unresolved complaints (unverified content; check official source directly).",
+          "guidance_id": "7b5d4344-f8a4-4f2c-bd0d-f42296699d92"
+        },
+        {
+          "relevance": "Lists complaint categories defined on the CBN complaints portal (unverified content; check official source directly).",
+          "guidance_id": "d47f7063-702e-47fe-8abb-9779ef9ca80f"
+        }
+      ],
+      "missing_information": [
+        {
+          "item": "Official Complaint Reference Number",
+          "importance": "required",
+          "why_it_matters": "A formal ticket or reference number from Northbridge Bank is required to track the complaint and escalate if necessary."
+        }
+      ],
+      "evidence_suggestions": [
+        {
+          "item": "Transfer receipt",
+          "reason": "Shows transaction details including date, time, amount, and session ID.",
+          "already_provided": true
+        },
+        {
+          "item": "Bank statement showing debit",
+          "reason": "Confirms that NGN 85,000.00 was deducted from your account.",
+          "already_provided": false
+        },
+        {
+          "item": "Recipient's bank statement showing non-receipt",
+          "reason": "Proves to the sending bank that the funds did not settle into the destination account.",
+          "already_provided": false
+        }
+      ]
+    },
+    "model_identifier": "gemini-3.6-flash"
+  },
+  "complaint": {
+    "subject": "Formal Complaint: Uncredited Transfer of NGN 85,000.00 - Ref 000013261108141205184426937051",
+    "content": "10 November 2026\n\nTo Customer Complaints / Customer Care Unit\nNorthbridge Bank\n\nDear Sir/Madam,\n\nRE: FORMAL COMPLAINT REGARDING UNCREDITED TRANSFER OF NGN 85,000.00\n\nI am writing to formally lodge a complaint regarding a failed funds transfer from my account with Northbridge Bank. My details are as follows:\n- Customer Name: Amara Okeke\n- Account Number: [ADD: account number]\n- Email: amara.demo.1794340743315@example.com\n- Phone Number: [ADD: phone number]\n- Preferred Contact Method: Email\n\nOn 8 November 2026 at 14:12, I performed a transfer of NGN 85,000.00 via the Northbridge Bank mobile banking app to Example Recipient at Example Microfinance Bank (account ending 4417). The transaction reference for this payment is 000013261108141205184426937051.\n\nMy account was debited immediately and the mobile app indicated that the transfer was successful. However, the recipient has confirmed that the money has not been credited to their account. Please note that a transfer receipt or a \"Successful\" status on the app is not proof that the money reached the recipient or that the transaction settled.\n\nI previously contacted customer care on 9 November 2026 to report this issue and was advised to wait 24 hours. That time has elapsed and the issue remains unresolved. I was not provided with an official complaint reference number during that call.\n\nIn support of this complaint, I have enclosed the following evidence:\n- Transfer receipt from my banking app (evidence-transfer-receipt.png)\n\nI request that you kindly resolve this issue by taking one of the following actions:\n1. Reverse the debit of NGN 85,000.00 to my account, or\n2. Confirm that the transaction has successfully settled and the funds have been credited to the recipient.\n\nPlease acknowledge receipt of this letter and provide me with an official complaint reference number for tracking.\n\nThank you for your assistance.\n\nYours faithfully,\n\nAmara Okeke",
+    "model_identifier": "gemini-3.6-flash",
+    "version": 1
+  },
+  "reply_analysis": {
+    "analysis": {
+      "amounts": [
+        {
+          "quote": "transfer of NGN 85,000.00",
+          "value": "NGN 85,000.00"
+        }
+      ],
+      "summary": "Northbridge Bank has acknowledged the complaint and assigned it reference number NB/CMP/2026/04571. The bank stated that its payments team is currently investigating the transaction with the receiving bank and will provide an update within 5 working days.",
+      "grounding": {
+        "removed": [],
+        "checked_at": "2026-11-10T20:00:18.253Z"
+      },
+      "confidence": "high",
+      "timeframes": [
+        {
+          "quote": "5 working days"
+        }
+      ],
+      "reply_points": [
+        "Note complaint reference number NB/CMP/2026/04571 for future correspondence.",
+        "Wait for the 5 working days timeframe to elapse before following up or escalating."
+      ],
+      "status_reason": "The bank acknowledged the complaint and is currently investigating the transfer, giving a 5 working days timeframe for an update.",
+      "classification": "under_investigation",
+      "reference_numbers": [
+        {
+          "quote": "reference NB/CMP/2026/04571",
+          "value": "NB/CMP/2026/04571"
+        }
+      ],
+      "information_requested": [],
+      "suggested_case_status": "awaiting_institution_response"
+    },
+    "analysis_model": "gemini-3.6-flash"
+  },
+  "recovery_plan": {
+    "output": {
+      "cautions": [
+        "A successful transfer status or app receipt is not proof that the money has settled into the recipient's account.",
+        "Never share your PIN, OTP, password, BVN, NIN, or full card details with anyone.",
+        "Resolve cannot guarantee that your funds will be refunded or that the complaint will succeed."
+      ],
+      "grounding": {
+        "checked_at": "2026-11-10T20:01:01.036Z",
+        "removed_guidance_ids": []
+      },
+      "situation": "Northbridge Bank has acknowledged your complaint (reference NB/CMP/2026/04571) regarding your NGN 85,000 transfer. The bank stated that its payments team is currently investigating the transaction with Example Microfinance Bank and will provide an update within 5 working days.",
+      "escalation": {
+        "explanation": "Northbridge Bank is actively investigating your complaint and has provided a tracking reference. Escalation is not recommended while the bank is actively processing the matter within its given timeframe. Please check official Central Bank of Nigeria resources directly for verified regulatory complaint rules and timelines.",
+        "consider_now": false,
+        "guidance_ids": []
+      },
+      "next_actions": [
+        {
+          "title": "Wait for the bank's investigation outcome",
+          "detail": "Allow Northbridge Bank time to complete its investigation with the receiving bank as stated in their acknowledgement email.",
+          "timing": "now"
+        },
+        {
+          "title": "Review the bank's response when received",
+          "detail": "When Northbridge Bank updates you, check if they have confirmed settlement to Example Microfinance Bank or initiated a reversal of your NGN 85,000 debit.",
+          "timing": "when_bank_replies"
+        },
+        {
+          "title": "Follow up with the bank",
+          "detail": "If Northbridge Bank does not provide an update within their stated 5 working days timeframe, reply using your complaint reference NB/CMP/2026/04571 to request a status update.",
+          "timing": "if_no_reply"
+        }
+      ],
+      "evidence_to_gather": [
+        "Transaction receipt or session details showing reference 000013261108141205184426937051",
+        "Account statement showing the NGN 85,000 debit on 8 Nov 2026",
+        "Acknowledgement email from Northbridge Bank with reference NB/CMP/2026/04571",
+        "Recipient's account statement showing no credit for NGN 85,000 covering 8 Nov 2026 to present"
+      ]
+    },
+    "model": "gemini-3.6-flash"
+  },
+  "guidance": [
+    {
+      "id": "41e9899d-76d1-454d-9287-09401edcaf87",
+      "title": "CBN Consumer Protection: complaints management"
+    },
+    {
+      "id": "a5fa417b-102e-4240-9c09-b530ca4a40a1",
+      "title": "CBN: how to lodge a complaint"
+    },
+    {
+      "id": "7b5d4344-f8a4-4f2c-bd0d-f42296699d92",
+      "title": "CBN Consumer Complaints Portal"
+    },
+    {
+      "id": "d47f7063-702e-47fe-8abb-9779ef9ca80f",
+      "title": "CBN Complaints Portal: complaint categories"
+    }
+  ]
+}

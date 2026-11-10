@@ -50,3 +50,11 @@ next-env.d.ts
 /test-results/
 /playwright-report/
 /playwright/.cache/
+
+# demo video: large regenerable working files
+/video/capture/frames/
+/video/out/frames/
+/video/audio/build/
+/video/voiceover/wav/
+/video/out/preview/
+/video/out/section-*.mp4

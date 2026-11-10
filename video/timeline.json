@@ -1,0 +1,284 @@
+{
+  "fps": 30,
+  "duration": 85,
+  "scenes": [
+    {
+      "id": "problem",
+      "start": 0,
+      "end": 9
+    },
+    {
+      "id": "intro",
+      "start": 9,
+      "end": 19.5
+    },
+    {
+      "id": "report",
+      "start": 19.5,
+      "end": 29
+    },
+    {
+      "id": "analysis",
+      "start": 29,
+      "end": 41
+    },
+    {
+      "id": "complaint",
+      "start": 41,
+      "end": 50
+    },
+    {
+      "id": "submit",
+      "start": 50,
+      "end": 65
+    },
+    {
+      "id": "track",
+      "start": 65,
+      "end": 77
+    },
+    {
+      "id": "closing",
+      "start": 77,
+      "end": 85
+    }
+  ],
+  "voiceover": {
+    "s1": 0.9,
+    "s2": 9.6,
+    "s3": 20.3,
+    "s4": 29.7,
+    "s5": 41.8,
+    "s6": 50.7,
+    "s7": 65.7,
+    "s8": 78.9
+  },
+  "sfx": [
+    {
+      "t": 0.72,
+      "kind": "notify"
+    },
+    {
+      "t": 4.15,
+      "kind": "message"
+    },
+    {
+      "t": 8.55,
+      "kind": "whoosh",
+      "gain": 0.8
+    },
+    {
+      "t": 9.35,
+      "kind": "logo",
+      "gain": 0.55
+    },
+    {
+      "t": 11.05,
+      "kind": "whoosh",
+      "gain": 0.6
+    },
+    {
+      "t": 19.112,
+      "kind": "click"
+    },
+    {
+      "t": 20.211,
+      "kind": "click"
+    },
+    {
+      "t": 21.181,
+      "kind": "click"
+    },
+    {
+      "t": 21.485,
+      "kind": "click"
+    },
+    {
+      "t": 22.13,
+      "kind": "click"
+    },
+    {
+      "t": 22.512,
+      "kind": "click"
+    },
+    {
+      "t": 22.86,
+      "kind": "click"
+    },
+    {
+      "t": 23.218,
+      "kind": "click"
+    },
+    {
+      "t": 23.632,
+      "kind": "click"
+    },
+    {
+      "t": 24.393,
+      "kind": "click"
+    },
+    {
+      "t": 24.474,
+      "kind": "click"
+    },
+    {
+      "t": 25.133,
+      "kind": "click"
+    },
+    {
+      "t": 25.51,
+      "kind": "click"
+    },
+    {
+      "t": 26.048,
+      "kind": "click"
+    },
+    {
+      "t": 26.201,
+      "kind": "click"
+    },
+    {
+      "t": 26.642,
+      "kind": "click"
+    },
+    {
+      "t": 26.871,
+      "kind": "click"
+    },
+    {
+      "t": 27.28,
+      "kind": "click"
+    },
+    {
+      "t": 27.733,
+      "kind": "click"
+    },
+    {
+      "t": 28.315,
+      "kind": "click"
+    },
+    {
+      "t": 29.52,
+      "kind": "click"
+    },
+    {
+      "t": 30.651,
+      "kind": "click"
+    },
+    {
+      "t": 32,
+      "kind": "status",
+      "gain": 0.7
+    },
+    {
+      "t": 41.325,
+      "kind": "click"
+    },
+    {
+      "t": 42.815,
+      "kind": "click"
+    },
+    {
+      "t": 43.55,
+      "kind": "doc"
+    },
+    {
+      "t": 48.006,
+      "kind": "click"
+    },
+    {
+      "t": 49.036,
+      "kind": "click"
+    },
+    {
+      "t": 49.2,
+      "kind": "status",
+      "gain": 0.8
+    },
+    {
+      "t": 49.647,
+      "kind": "click"
+    },
+    {
+      "t": 50.525,
+      "kind": "click"
+    },
+    {
+      "t": 52.872,
+      "kind": "click"
+    },
+    {
+      "t": 53.344,
+      "kind": "click"
+    },
+    {
+      "t": 54.367,
+      "kind": "click"
+    },
+    {
+      "t": 56.156,
+      "kind": "click"
+    },
+    {
+      "t": 56.559,
+      "kind": "click"
+    },
+    {
+      "t": 57.919,
+      "kind": "click"
+    },
+    {
+      "t": 60.446,
+      "kind": "click"
+    },
+    {
+      "t": 61.75,
+      "kind": "send"
+    },
+    {
+      "t": 61.761,
+      "kind": "click"
+    },
+    {
+      "t": 65.734,
+      "kind": "click"
+    },
+    {
+      "t": 66.05,
+      "kind": "message",
+      "gain": 0.9
+    },
+    {
+      "t": 66.903,
+      "kind": "click"
+    },
+    {
+      "t": 68.3,
+      "kind": "status",
+      "gain": 0.7
+    },
+    {
+      "t": 69.936,
+      "kind": "click"
+    },
+    {
+      "t": 70.956,
+      "kind": "click"
+    },
+    {
+      "t": 74.5,
+      "kind": "whoosh",
+      "gain": 0.5
+    },
+    {
+      "t": 75.05,
+      "kind": "status",
+      "gain": 0.55
+    },
+    {
+      "t": 77,
+      "kind": "logo",
+      "gain": 0.8
+    }
+  ]
+}

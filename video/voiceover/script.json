@@ -1,0 +1,14 @@
+{
+  "voice": "af_heart",
+  "speed": 1.0,
+  "lines": [
+    { "id": "s1", "scene": "The problem", "text": "Your money leaves your account. The transaction says successful. But the person you're paying never receives it. Now what?" },
+    { "id": "s2", "scene": "Introducing Resolve", "text": "Meet Resolve. An AI-powered platform that helps you investigate financial problems, prepare complaints, and take the next step toward getting your money back." },
+    { "id": "s3", "scene": "Report the problem", "text": "Simply tell Resolve what happened. Provide your transaction details, and upload the evidence." },
+    { "id": "s4", "scene": "AI investigation", "text": "Resolve analyses your complaint, organises the evidence, and helps you understand what likely went wrong, and what to do next." },
+    { "id": "s5", "scene": "Complaint report", "text": "It then prepares a structured complaint, with the information your bank needs to review the issue." },
+    { "id": "s6", "scene": "Submit to your bank", "text": "But Resolve doesn't stop at generating a report. It helps you identify where to send your complaint, and supports submitting it through available bank channels." },
+    { "id": "s7", "scene": "Track the complaint", "text": "And once your complaint is submitted, Resolve helps you keep track of the process, understand responses from your bank, and know what to do next." },
+    { "id": "s8", "scene": "Closing", "text": "Resolve. Turning financial complaints into actionable next steps." }
+  ]
+}

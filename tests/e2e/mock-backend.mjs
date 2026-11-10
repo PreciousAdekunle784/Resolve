@@ -532,9 +532,45 @@ async function serveFile(pool, res, bucket, name, download) {
 // Anthropic Messages API (deterministic fake for tests)
 // ---------------------------------------------------------------------------
 const MOCK_REFERENCE = "NIP-E2E-REF-0001";
+
+// Optional replay of previously captured, genuine AI outputs (used to record the demo video):
+// MOCK_AI_FIXTURES=path/to/gemini-outputs.json  MOCK_AI_DELAY_MS=2500
+const FIXTURES = process.env.MOCK_AI_FIXTURES ? JSON.parse(readFileSync(process.env.MOCK_AI_FIXTURES, "utf8")) : null;
+const AI_DELAY_MS = Number(process.env.MOCK_AI_DELAY_MS ?? 0);
+const withoutGrounding = (o) => {
+  const { grounding, ...rest } = o ?? {};
+  void grounding;
+  return rest;
+};
+/** Returns the captured output for this task, adapted to the local database's guidance IDs and user. */
+function fixtureResult(system, userText) {
+  if (!FIXTURES) return null;
+  if (system.includes("You read one piece of evidence")) return FIXTURES.evidence_extraction?.structured_result ?? null;
+  if (system.includes("You analyse a user's financial transaction problem")) {
+    const r = withoutGrounding(FIXTURES.case_analysis?.structured_result);
+    const localIds = new Map(Array.from(userText.matchAll(/ID: ([0-9a-f-]{36})\nTitle: ([^\n]+)/g)).map((m) => [m[2], m[1]]));
+    const liveTitles = new Map((FIXTURES.guidance ?? []).map((g) => [g.id, g.title]));
+    r.guidance_references = (r.guidance_references ?? [])
+      .map((g) => ({ ...g, guidance_id: localIds.get(liveTitles.get(g.guidance_id)) }))
+      .filter((g) => g.guidance_id);
+    return r;
+  }
+  if (system.includes("You write a formal complaint letter") && FIXTURES.complaint) {
+    const email = (userText.match(/Email: (\S+@\S+)/) ?? [])[1];
+    const body = email ? FIXTURES.complaint.content.replace(/[\w.+-]+@example\.com/g, email) : FIXTURES.complaint.content;
+    const placeholders = Array.from(body.matchAll(/\[ADD: ([^\]]+)\]/g)).map((m) => m[1]);
+    return { subject: FIXTURES.complaint.subject, body, missing_placeholders: placeholders };
+  }
+  if (system.includes("You read a reply from a financial institution") && FIXTURES.reply_analysis) return withoutGrounding(FIXTURES.reply_analysis.analysis);
+  if (system.includes("You plan the next steps of a customer's complaint") && FIXTURES.recovery_plan) return withoutGrounding(FIXTURES.recovery_plan.output);
+  return null;
+}
+const fixtureModel = () => FIXTURES?.case_analysis?.model_identifier;
 const aiRequests = [];
 /** Deterministic, schema-valid result for each AI task (shared by both provider mocks). */
 function fakeTaskResult(system, userText) {
+  const replay = fixtureResult(system, userText);
+  if (replay) return replay;
   let result;
   if (system.includes("You read one piece of evidence")) {
     result = {
@@ -658,7 +694,7 @@ function handleGemini(req, res, body, url) {
   if (!result) return send(res, 400, { error: { code: 400, message: "Unknown task in mock", status: "INVALID_ARGUMENT" } });
   return send(res, 200, {
     candidates: [{ content: { role: "model", parts: [{ text: JSON.stringify(result) }] }, finishReason: "STOP", index: 0 }],
-    modelVersion: "mock-gemini-e2e",
+    modelVersion: (FIXTURES && fixtureModel()) || "mock-gemini-e2e",
     usageMetadata: { promptTokenCount: 10, candidatesTokenCount: 10, totalTokenCount: 20 },
   });
 }
@@ -687,7 +723,10 @@ http
       if (url.pathname.startsWith("/rest/v1")) return await handleRest(pool, req, res, url, body);
       if (url.pathname.startsWith("/storage/v1")) return await handleStorage(pool, req, res, url, body);
       if (url.pathname.startsWith("/v1/messages")) return handleAnthropic(req, res, body);
-      if (/^\/v1(beta|alpha)?\/models\/[^/]+:generateContent$/.test(url.pathname)) return handleGemini(req, res, body, url);
+      if (/^\/v1(beta|alpha)?\/models\/[^/]+:generateContent$/.test(url.pathname)) {
+        if (AI_DELAY_MS) await new Promise((r) => setTimeout(r, AI_DELAY_MS));
+        return handleGemini(req, res, body, url);
+      }
       if (await handleGoogle(req, res, url, body, send)) return;
       return send(res, 404, { message: "not found" });
     } catch (e) {

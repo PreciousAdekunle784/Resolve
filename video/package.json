@@ -1,0 +1,6 @@
+{
+  "name": "resolve-demo-video",
+  "private": true,
+  "type": "module",
+  "description": "Resolve product demo video: capture, composition, audio and render scripts. Uses Playwright and FFmpeg from the parent environment."
+}

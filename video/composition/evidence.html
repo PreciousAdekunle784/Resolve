@@ -1,0 +1,10 @@
+<!doctype html>
+<html><head><meta charset="utf-8"><style id="css"></style>
+<style>html,body{margin:0;width:720px;height:1560px;overflow:hidden} #s{position:relative;width:720px;height:1560px}</style></head>
+<body><div id="s"></div>
+<script type="module">
+  import { receiptScreen, RECEIPT_CSS } from "./scenario.js";
+  document.getElementById("css").textContent = RECEIPT_CSS;
+  document.getElementById("s").innerHTML = receiptScreen();
+  document.fonts.ready.then(() => (window.ready = true));
+</script></body></html>
