@@ -4,6 +4,26 @@ import { z, type ZodType } from "zod";
 import { AIError } from "./errors";
 import type { AIContentPart, AIProvider, StructuredRequest, StructuredResponse } from "./provider";
 
+/** Model found by automatic discovery after the configured one wasn't available (per server instance). */
+const discoveredModels = new Map<string, string>();
+
+/**
+ * Chooses the best general-purpose "Flash" model from Google's model list:
+ * stable before preview, full Flash before Flash-Lite, newest version first.
+ */
+export function pickFlashModel(models: { name?: string; supportedActions?: string[] }[]): string | null {
+  const names = models
+    .filter((m) => m.name && (!m.supportedActions || m.supportedActions.includes("generateContent")))
+    .map((m) => m.name!.replace(/^models\//, ""))
+    .filter((n) => /^gemini-/i.test(n) && /flash/i.test(n))
+    .filter((n) => !/(image|tts|audio|live|embed|robotics|computer|native|thinking|learnlm)/i.test(n));
+  const version = (n: string) => Number(/gemini-(\d+(?:\.\d+)?)/i.exec(n)?.[1] ?? 0);
+  const unstable = (n: string) => (/(preview|exp)/i.test(n) ? 1 : 0);
+  const lite = (n: string) => (/lite/i.test(n) ? 1 : 0);
+  names.sort((a, b) => unstable(a) - unstable(b) || lite(a) - lite(b) || version(b) - version(a) || a.length - b.length);
+  return names[0] ?? null;
+}
+
 /**
  * Google Gemini implementation of the AI provider interface (works with a free
  * Google AI Studio API key). Uses JSON structured output with the task's JSON
@@ -23,6 +43,38 @@ export class GeminiProvider implements AIProvider {
   }
 
   async generateStructured<T>(request: StructuredRequest<T>): Promise<StructuredResponse<T>> {
+    const configured = this.model;
+    if (discoveredModels.has(configured)) this.model = discoveredModels.get(configured)!;
+    try {
+      return await this.generateWithSchema(request);
+    } catch (error) {
+      if (error instanceof AIError && error.code === "model_unavailable" && !discoveredModels.has(configured)) {
+        const replacement = await this.discoverModel();
+        if (replacement && replacement !== this.model) {
+          console.warn(`[ai] Gemini model "${configured}" not found; using "${replacement}" instead. Set AI_MODEL to choose a model.`);
+          discoveredModels.set(configured, replacement);
+          this.model = replacement;
+          return this.generateWithSchema(request);
+        }
+      }
+      throw error;
+    }
+  }
+
+  /** Asks Google which models this API key can use and picks the best Flash model. */
+  private async discoverModel(): Promise<string | null> {
+    try {
+      const pager = await this.client.models.list({ config: { pageSize: 200, queryBase: true } });
+      const models: { name?: string; supportedActions?: string[] }[] = [];
+      for await (const m of pager) models.push(m);
+      return pickFlashModel(models);
+    } catch (e) {
+      console.error("[ai] Could not list Gemini models:", e instanceof ApiError ? e.status : e instanceof Error ? e.name : typeof e);
+      return null;
+    }
+  }
+
+  private async generateWithSchema<T>(request: StructuredRequest<T>): Promise<StructuredResponse<T>> {
     const jsonSchema = toGeminiJsonSchema(request.schema);
     const parts = request.content.map(toPart);
     try {

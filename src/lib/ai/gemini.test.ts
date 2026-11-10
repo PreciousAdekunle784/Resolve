@@ -2,7 +2,7 @@ import http from "node:http";
 import type { AddressInfo } from "node:net";
 import { afterAll, beforeAll, describe, expect, it } from "vitest";
 import { AIError } from "./errors";
-import { GeminiProvider, toGeminiJsonSchema } from "./gemini";
+import { GeminiProvider, pickFlashModel, toGeminiJsonSchema } from "./gemini";
 import { caseAnalysisSchema, complaintDraftSchema } from "./schemas";
 
 type Reply = { status?: number; body: unknown };
@@ -26,7 +26,7 @@ beforeAll(async () => {
 });
 afterAll(() => new Promise<void>((resolve) => server.close(() => resolve())));
 
-const provider = () => new GeminiProvider({ apiKey: "test-key", model: "gemini-test-flash", timeoutMs: 5000, baseUrl });
+const provider = (model = "gemini-test-flash") => new GeminiProvider({ apiKey: "test-key", model, timeoutMs: 5000, baseUrl });
 const ok = (text: string, finishReason = "STOP") => ({
   body: { candidates: [{ content: { role: "model", parts: [{ text }] }, finishReason }], modelVersion: "gemini-test-flash-001" },
 });
@@ -107,5 +107,40 @@ describe("toGeminiJsonSchema", () => {
     expect(json).not.toContain("$schema");
     expect(json).toContain('"key_facts"');
     expect(json).toContain('"user_provided"');
+  });
+});
+
+describe("automatic model discovery", () => {
+  it("picks the best stable Flash model", () => {
+    const list = [
+      { name: "models/gemini-2.5-flash", supportedActions: ["generateContent"] },
+      { name: "models/gemini-3.5-flash-preview-05", supportedActions: ["generateContent"] },
+      { name: "models/gemini-3.0-flash", supportedActions: ["generateContent"] },
+      { name: "models/gemini-3.0-flash-lite", supportedActions: ["generateContent"] },
+      { name: "models/gemini-3.0-flash-image", supportedActions: ["generateContent"] },
+      { name: "models/gemini-3.0-pro", supportedActions: ["generateContent"] },
+      { name: "models/text-embedding-005", supportedActions: ["embedContent"] },
+    ];
+    expect(pickFlashModel(list)).toBe("gemini-3.0-flash");
+    expect(pickFlashModel([{ name: "models/gemini-9-pro" }])).toBeNull();
+  });
+
+  it("switches to an available model when the configured one isn't found", async () => {
+    requests.length = 0;
+    respond = (_body, url) => {
+      if (url.includes("unknown-model:generateContent")) return err(404, "models/unknown-model is not found", "NOT_FOUND");
+      if (/\/models(\?|$)/.test(url)) {
+        return { body: { models: [{ name: "models/gemini-7.0-flash", supportedGenerationMethods: ["generateContent"] }] } };
+      }
+      if (url.includes("gemini-7.0-flash:generateContent")) return ok(JSON.stringify(valid));
+      return err(400, "unexpected " + url, "INVALID_ARGUMENT");
+    };
+    const result = await provider("unknown-model").generateStructured(request);
+    expect(result.data).toEqual(valid);
+    expect(requests.map((r) => r.url).join(" ")).toContain("gemini-7.0-flash:generateContent");
+    // Remembered for next time: no second lookup.
+    requests.length = 0;
+    await provider("unknown-model").generateStructured(request);
+    expect(requests).toHaveLength(1);
   });
 });
