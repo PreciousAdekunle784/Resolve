@@ -3,6 +3,7 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { clsx } from "clsx";
 import { EvidenceManager } from "@/components/app/evidence-manager";
+import { getSupabasePublishableKey } from "@/lib/env";
 import { Timeline } from "@/components/app/timeline";
 import { GuidanceCard } from "@/components/guidance-card";
 import { Alert } from "@/components/ui/alert";
@@ -246,7 +247,7 @@ export default async function CasePage({ params, searchParams }: PageProps<"/cas
         <Card>
           <CardHeader title="Evidence" description="Files are private. Only you can view them, through links that expire after 5 minutes." />
           <CardBody>
-            <EvidenceManager caseId={c.id} initialEvidence={evidence} />
+            <EvidenceManager caseId={c.id} initialEvidence={evidence} supabaseKey={getSupabasePublishableKey()} />
           </CardBody>
         </Card>
       ) : null}

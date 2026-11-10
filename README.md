@@ -145,7 +145,7 @@ Sign out and back in. An **Admin: guidance** link appears in the sidebar.
 
 1. Push the code to GitHub (already done for this repository).
 2. Sign in to [vercel.com](https://vercel.com) with GitHub. Click **Add New → Project** and import the `Resolve` repository.
-3. Under **Environment Variables**, add everything from your `.env.local`. Set `NEXT_PUBLIC_SITE_URL` to your Vercel URL (e.g. `https://resolve-xyz.vercel.app`).
+3. Under **Environment Variables**, add everything from your `.env.local`: `SUPABASE_URL`, `SUPABASE_PUBLISHABLE_KEY`, `SUPABASE_SECRET_KEY`, `AI_PROVIDER` and your AI key. You don't need a `NEXT_PUBLIC_` prefix. `SITE_URL` is optional on Vercel, because the production address is detected automatically.
 4. Click **Deploy**.
 5. In Supabase **Authentication → URL Configuration**, change the **Site URL** to your Vercel URL and add `https://your-vercel-url/auth/confirm` to the redirect URLs.
 6. In Supabase, set up a custom SMTP provider (Authentication → Emails). The built-in sender is heavily rate-limited and only for testing.

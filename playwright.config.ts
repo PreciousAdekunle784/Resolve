@@ -41,9 +41,9 @@ export default defineConfig({
       timeout: 300_000,
       env: {
         NEXT_DIST_DIR: ".next-e2e",
-        NEXT_PUBLIC_SITE_URL: `http://localhost:${APP_PORT}`,
-        NEXT_PUBLIC_SUPABASE_URL: BACKEND,
-        NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY: ANON_KEY,
+        SITE_URL: `http://localhost:${APP_PORT}`,
+        SUPABASE_URL: BACKEND,
+        SUPABASE_PUBLISHABLE_KEY: ANON_KEY,
         SUPABASE_SECRET_KEY: SERVICE_KEY,
         // Run the suite against either provider: E2E_AI_PROVIDER=gemini npm run e2e
         ...(process.env.E2E_AI_PROVIDER === "gemini"

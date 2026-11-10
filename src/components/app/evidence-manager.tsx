@@ -9,7 +9,6 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/field";
 import { Spinner } from "@/components/ui/spinner";
 import { EVIDENCE_MAX_FILE_BYTES, EVIDENCE_MAX_FILES_PER_CASE } from "@/lib/constants";
-import { getSupabasePublishableKey } from "@/lib/env";
 import { checkDeclaredFile } from "@/lib/files";
 import { formatDate, formatFileSize } from "@/lib/format";
 import type { EvidenceRow } from "@/lib/types";
@@ -32,13 +31,12 @@ async function api<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 /** Uploads the file straight to Supabase Storage using a one-time signed URL, reporting progress. */
-function putWithProgress(signedUrl: string, file: File, onProgress: (pct: number) => void): Promise<void> {
+function putWithProgress(signedUrl: string, file: File, apiKey: string | undefined, onProgress: (pct: number) => void): Promise<void> {
   return new Promise((resolve, reject) => {
     const xhr = new XMLHttpRequest();
     xhr.open("PUT", signedUrl);
     xhr.setRequestHeader("x-upsert", "false");
-    const key = getSupabasePublishableKey();
-    if (key) xhr.setRequestHeader("apikey", key);
+    if (apiKey) xhr.setRequestHeader("apikey", apiKey);
     xhr.upload.onprogress = (e) => {
       if (e.lengthComputable) onProgress(Math.round((e.loaded / e.total) * 100));
     };
@@ -57,10 +55,13 @@ export function EvidenceManager({
   caseId,
   initialEvidence,
   readOnly = false,
+  supabaseKey,
 }: {
   caseId: string;
   initialEvidence: EvidenceRow[];
   readOnly?: boolean;
+  /** The publishable (public) Supabase key, passed from the server. */
+  supabaseKey?: string;
 }) {
   const router = useRouter();
   const [evidence, setEvidence] = useState(initialEvidence);
@@ -90,7 +91,7 @@ export function EvidenceManager({
           method: "POST",
           body: JSON.stringify({ filename: item.file.name, mimeType: item.file.type, size: item.file.size }),
         });
-        await putWithProgress(prep.signedUrl, item.file, (pct) => updateUpload(item.key, { progress: pct }));
+        await putWithProgress(prep.signedUrl, item.file, supabaseKey, (pct) => updateUpload(item.key, { progress: pct }));
         updateUpload(item.key, { status: "verifying", progress: 100 });
         const done = await api<{ evidence: EvidenceRow }>(`/api/cases/${caseId}/evidence`, {
           method: "POST",
@@ -104,7 +105,7 @@ export function EvidenceManager({
         updateUpload(item.key, { status: "error", error: e instanceof Error ? e.message : "Upload failed." });
       }
     },
-    [caseId, router],
+    [caseId, router, supabaseKey],
   );
 
   const addFiles = (files: FileList | File[]) => {

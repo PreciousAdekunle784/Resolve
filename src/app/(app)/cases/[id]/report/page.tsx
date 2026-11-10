@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { redirect } from "next/navigation";
 import { EvidenceManager } from "@/components/app/evidence-manager";
+import { getSupabasePublishableKey } from "@/lib/env";
 import { WizardProgress } from "@/components/app/wizard-progress";
 import { Alert } from "@/components/ui/alert";
 import { ButtonLink } from "@/components/ui/button";
@@ -73,7 +74,7 @@ export default async function ReportPage({ params, searchParams }: PageProps<"/c
             {step === 3 ? <DescriptionStepForm c={c} editMode={editMode} /> : null}
             {step === 4 ? (
               <div className="space-y-6">
-                <EvidenceManager caseId={c.id} initialEvidence={evidence} />
+                <EvidenceManager caseId={c.id} initialEvidence={evidence} supabaseKey={getSupabasePublishableKey()} />
                 <div className="flex flex-col-reverse gap-3 border-t border-ink-100 pt-5 sm:flex-row sm:justify-between">
                   <ButtonLink href={`/cases/${c.id}/report?step=3`} variant="ghost">Back</ButtonLink>
                   <ButtonLink href={`/cases/${c.id}/report?step=5`}>
