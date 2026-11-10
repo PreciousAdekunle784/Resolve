@@ -19,6 +19,14 @@ export function authErrorMessage(error: { code?: string; message?: string; statu
       return "Too many attempts. Please wait a few minutes and try again.";
     case "signup_disabled":
       return "New sign-ups are currently disabled.";
+    case "email_address_invalid":
+      return "This email address can't be used. Please use a real email address that you can open.";
+    case "email_address_not_authorized":
+      return "We can't send a confirmation email to this address yet. (Site owner: Supabase's built-in email only sends to your project's team members. Add custom SMTP, or turn off \"Confirm email\" in Supabase → Authentication → Sign In / Providers → Email.)";
+    case "email_provider_disabled":
+      return "Signing up with email is turned off for this site.";
+    case "validation_failed":
+      return "Please check your email address and password and try again.";
     case "otp_expired":
     case "flow_state_expired":
       return "This link has expired. Please request a new one.";

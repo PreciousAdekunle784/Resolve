@@ -28,7 +28,10 @@ export async function loginAction(_prev: ActionResult | null, formData: FormData
 
   const supabase = await createClient();
   const { error } = await supabase.auth.signInWithPassword(parsed.data);
-  if (error) return { ok: false, error: authErrorMessage(error) };
+  if (error) {
+    if (error.code !== "invalid_credentials") console.error("[auth] sign-in failed:", error.code ?? "no_code", error.status ?? "");
+    return { ok: false, error: authErrorMessage(error) };
+  }
 
   redirect(safeNextPath(formData.get("next") as string | null));
 }
@@ -49,7 +52,10 @@ export async function registerAction(_prev: ActionResult | null, formData: FormD
       emailRedirectTo: `${getSiteUrl()}/auth/confirm?next=${encodeURIComponent(onboardingPath)}`,
     },
   });
-  if (error) return { ok: false, error: authErrorMessage(error) };
+  if (error) {
+    console.error("[auth] sign-up failed:", error.code ?? "no_code", error.status ?? "");
+    return { ok: false, error: authErrorMessage(error) };
+  }
 
   // Email confirmation disabled: the user is signed in immediately.
   if (data.session) redirect(onboardingPath);
