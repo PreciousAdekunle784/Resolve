@@ -33,7 +33,8 @@ export function getAIProvider(): AIProvider {
     return new GeminiProvider({
       apiKey,
       model: process.env.AI_MODEL?.trim() || "gemini-flash-latest",
-      timeoutMs: 110_000,
+      // Keep each attempt short so a slow model can't use up the whole request.
+      timeoutMs: 60_000,
       baseUrl: process.env.GEMINI_BASE_URL || undefined,
     });
   }

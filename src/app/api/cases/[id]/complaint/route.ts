@@ -8,7 +8,7 @@ import { buildTemplateComplaint } from "@/lib/complaint-template";
 import { createClient } from "@/lib/supabase/server";
 import type { EvidenceRow } from "@/lib/types";
 
-export const maxDuration = 120;
+export const maxDuration = 300;
 
 /**
  * Creates a new complaint draft version, either with AI ("ai") or from a
