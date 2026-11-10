@@ -58,3 +58,4 @@ next-env.d.ts
 /video/voiceover/wav/
 /video/out/preview/
 /video/out/section-*.mp4
+__pycache__/
