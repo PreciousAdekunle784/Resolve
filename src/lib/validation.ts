@@ -212,9 +212,13 @@ export const followUpAnswerSchema = z.object({
     }),
 });
 
+// Browsers send form text with Windows line breaks (\r\n); store plain \n so the
+// saved text matches what the editor shows.
+const unixNewlines = (v: unknown) => (typeof v === "string" ? v.replace(/\r\n?/g, "\n") : v);
+
 export const complaintEditSchema = z.object({
-  subject: z.string().trim().max(300).default(""),
-  content: z.string().trim().min(20, "The complaint is too short").max(20000),
+  subject: z.preprocess(unixNewlines, z.string().trim().max(300).default("")),
+  content: z.preprocess(unixNewlines, z.string().trim().min(20, "The complaint is too short").max(20000)),
 });
 
 export function fieldErrors(error: z.ZodError): Record<string, string[]> {

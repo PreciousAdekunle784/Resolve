@@ -72,3 +72,12 @@ describe("account validation", () => {
     expect(parsed.aiConsent).toBe(false);
   });
 });
+
+describe("complaint edits", () => {
+  it("stores plain line breaks and trims, so saved text matches the editor", async () => {
+    const { complaintEditSchema } = await import("./validation");
+    const r = complaintEditSchema.parse({ subject: " Complaint \r\n", content: "Dear Sir/Madam,\r\n\r\nPlease help me with this.\r\n" });
+    expect(r).toEqual({ subject: "Complaint", content: "Dear Sir/Madam,\n\nPlease help me with this." });
+    expect(complaintEditSchema.parse({ content: "Dear Sir/Madam, please help me." }).subject).toBe("");
+  });
+});

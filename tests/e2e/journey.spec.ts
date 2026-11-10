@@ -197,6 +197,9 @@ test("complaint builder: generate, edit, version, approve, export", async ({ pag
   await page.getByRole("button", { name: "Save changes" }).click();
   await expect(page.getByText("Draft saved.")).toBeVisible();
   await expect(page.getByText("Fill in the missing details")).toHaveCount(0);
+  // After saving, the editor must not think there are still unsaved changes.
+  await expect(page.getByText("You have unsaved changes")).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Save changes" })).toBeDisabled();
 
   // Rebuild from the template (no AI) — creates version 2, keeps version 1.
   await page.getByRole("button", { name: "Rebuild from template" }).click();

@@ -100,7 +100,9 @@ function DraftEditor({ caseId, draft, warnings }: { caseId: string; draft: Compl
   const [subject, setSubject] = useState(draft.subject);
   const [content, setContent] = useState(draft.content);
 
-  const dirty = subject !== draft.subject || content !== draft.content;
+  // Compare the way the server saves text (trimmed, \n line breaks), so a saved draft never looks "unsaved".
+  const norm = (v: string) => v.replace(/\r\n?/g, "\n").trim();
+  const dirty = norm(subject) !== norm(draft.subject) || norm(content) !== norm(draft.content);
   const placeholders = Array.from(new Set(Array.from(`${subject}\n${content}`.matchAll(/\[ADD:\s*([^\]]+)\]/gi)).map((m) => m[1].trim())));
   const approved = draft.status === "approved";
 
