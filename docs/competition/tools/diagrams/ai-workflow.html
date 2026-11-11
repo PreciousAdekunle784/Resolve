@@ -1,0 +1,58 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="diagram.css">
+<style>
+#d{width:1600px;height:980px}
+.lane{position:absolute;left:40px;width:1520px;border-radius:16px;}
+.lane .ln{position:absolute;left:0;top:0;bottom:0;width:150px;border-radius:16px 0 0 16px;display:flex;align-items:center;padding:0 16px;font-weight:700;font-size:15px;color:#0b1530;line-height:1.3}
+.s{position:absolute;width:176px;min-height:86px;border-radius:12px;border:1.5px solid #c9d5ea;background:#fff;padding:9px 11px;font-size:12.5px;color:#2b3852;line-height:1.35}
+.s b{display:block;font-size:13.5px;color:#0b1530;margin-bottom:3px}
+.s.gate{border:2px solid #d9910f;background:#fffaf0}
+.s.ai{border-color:#a78bfa;background:#faf7ff}
+.s.res{border-color:#2563eb;background:#f2f6ff}
+.s.ext{border-color:#1a7f46;background:#f0faf4}
+.n{position:absolute;top:-10px;left:-10px;width:24px;height:24px;border-radius:50%;background:#0b1530;color:#fff;font-size:12px;font-weight:700;display:grid;place-items:center}
+</style></head><body><div id="d">
+<div class="title">AI and automation workflow: what is automated and what needs a person</div>
+<div class="subtitle">Implemented flow. Steps with an amber border cannot happen without the user's explicit action. Outcomes are decided by the financial institution.</div>
+<div class="lane" style="top:110px;height:190px;background:#fff8ec"><div class="ln" style="background:#fdebc8">You<br>(user)</div></div>
+<div class="lane" style="top:310px;height:190px;background:#f2f6ff"><div class="ln" style="background:#dce8ff">Resolve<br>(automated checks)</div></div>
+<div class="lane" style="top:510px;height:190px;background:#faf7ff"><div class="ln" style="background:#ece4ff">AI<br>(Gemini / Claude)</div></div>
+<div class="lane" style="top:710px;height:150px;background:#f0faf4"><div class="ln" style="background:#d8f0e1">Financial<br>institution</div></div>
+<script>
+const steps = [
+  ["s1", 205, 150, "gate", "Report the problem", "Category, bank, amount, date, reference, description. Saved after each step."],
+  ["s2", 205, 360, "res", "Validate & store", "Server checks fields and blocks PINs/OTPs/BVN. Evidence is type-checked and stored privately."],
+  ["s3", 405, 560, "ai", "Read evidence", "Extracts exact text from receipts, alerts and statements (document extraction)."],
+  ["s4", 605, 560, "ai", "Analyse the case", "Summary, likely category, missing info, conflicts, questions, next steps, guidance links."],
+  ["s5", 605, 360, "res", "Grounding checks", "Labels each fact by source; unconfirmed facts become “Unverified”; unknown guidance removed."],
+  ["s6", 805, 150, "gate", "Review & correct", "Confirm or reject AI-read facts, answer follow-up questions."],
+  ["s7", 805, 560, "ai", "Draft complaint", "Only from confirmed facts; missing details become [ADD: …]. A no-AI template also exists."],
+  ["s8", 1005, 360, "res", "Pre-send checks", "Placeholders, sensitive data, details not in the case."],
+  ["s9", 1005, 150, "gate", "Approve & authorise", "User approves the letter, then authorises one specific submission."],
+  ["s10", 1205, 360, "res", "Submit", "Sends from the user's Gmail (proof required) or guides a website submission."],
+  ["s11", 1205, 740, "ext", "Bank reviews", "Acknowledges, investigates, asks for information or decides."],
+  ["s12", 1380, 360, "res", "Track replies", "Finds replies in the Gmail thread (with permission) or the user adds them."],
+  ["s13", 1380, 560, "ai", "Explain reply & plan", "Classifies the reply; quotes checked against the reply text; recovery plan."],
+  ["s14", 1380, 150, "gate", "Decide next step", "Apply suggested status, follow up, record the outcome."],
+];
+document.write(steps.map(([id,x,y,cls,t,d],i)=>`<div class="s ${cls}" id="${id}" style="left:${x}px;top:${y}px"><span class="n">${i+1}</span><b>${t}</b>${d}</div>`).join(""));
+</script>
+<svg class="wires" id="w" viewBox="0 0 1600 980"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#6b86b8"/></marker></defs></svg>
+<div class="legend" style="left:40px;top:885px;gap:24px">
+  <span><span class="tag gate">amber</span>requires the user</span><span><span class="tag">blue</span>Resolve automation (deterministic)</span><span><span class="tag ai">purple</span>AI assistance (advisory)</span><span><span class="tag ext">green</span>financial institution</span>
+  <span>The AI never sends anything, never chooses a recipient and never decides an outcome.</span>
+</div>
+<script>
+const w=document.getElementById("w");
+const b=(id)=>{const e=document.getElementById(id);return{x:e.offsetLeft,y:e.offsetTop,w:e.offsetWidth,h:e.offsetHeight}};
+for(let i=0;i<steps.length-1;i++){
+  const a=b(steps[i][0]),c=b(steps[i+1][0]);
+  let x1,y1,x2,y2;
+  if(Math.abs(a.x-c.x)<10){x1=a.x+a.w/2;x2=x1;if(c.y>a.y){y1=a.y+a.h;y2=c.y}else{y1=a.y;y2=c.y+c.h}}
+  else{x1=a.x+a.w;y1=a.y+a.h/2;x2=c.x;y2=c.y+c.h/2}
+  const mx=(x1+x2)/2;
+  const p=document.createElementNS("http://www.w3.org/2000/svg","path");
+  p.setAttribute("d",Math.abs(a.x-c.x)<10?`M${x1} ${y1} V ${y2}`:`M${x1} ${y1} C ${mx} ${y1}, ${mx} ${y2}, ${x2} ${y2}`);
+  p.setAttribute("marker-end","url(#a)");w.appendChild(p);
+}
+</script>
+</div></body></html>

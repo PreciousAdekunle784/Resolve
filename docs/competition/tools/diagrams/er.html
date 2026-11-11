@@ -1,0 +1,79 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="diagram.css">
+<style>
+#d{width:1600px;height:1060px}
+.t{position:absolute;width:330px;border:1.5px solid #c9d5ea;border-radius:12px;background:#fff;overflow:hidden;font-size:12.5px}
+.t .h{background:#0b1530;color:#fff;padding:8px 12px;font-weight:650;font-size:14px;display:flex;justify-content:space-between;align-items:center}
+.t .h small{font-weight:500;color:#9fb3d6;font-size:11px}
+.t.ref .h{background:#2563eb}
+.t.sec .h{background:#475569}
+.t .r{padding:3.5px 12px;border-top:1px solid #eef2f8;color:#2b3852;display:flex;justify-content:space-between;gap:8px}
+.t .r span:last-child{color:#7b879c;font-family:"DejaVu Sans Mono",monospace;font-size:11px}
+.pk{color:#b45309;font-weight:700}.fk{color:#1d4ed8;font-weight:600}
+</style></head><body><div id="d">
+<div class="title">Resolve: database design (implemented schema)</div>
+<div class="subtitle">15 tables across 4 migrations (supabase/migrations). Key columns only. Every user-owned table carries user_id and is protected by Row Level Security.</div>
+
+<script>
+const T = (id, x, y, name, note, rows, cls = "") =>
+  `<div class="t ${cls}" id="${id}" style="left:${x}px;top:${y}px"><div class="h">${name}<small>${note}</small></div>${rows
+    .map(([c, t]) => `<div class="r"><span class="${c.startsWith("*") ? "pk" : c.startsWith(">") ? "fk" : ""}">${c.replace(/^[*>]/, "")}</span><span>${t}</span></div>`)
+    .join("")}</div>`;
+document.write(
+  T("users", 40, 120, "auth.users", "Supabase Auth", [["*id", "uuid"], ["email", "text"]], "sec") +
+  T("profiles", 40, 230, "profiles", "1 per user", [["*>id", "→ auth.users"], ["full_name · phone · country", "text"], ["account_type", "individual | business"], ["ai_processing_consent", "bool + date"], ["notify_* preferences", "bool"]]) +
+  T("usage", 40, 440, "ai_usage_events", "rate limiting", [[">user_id", "uuid"], ["kind", "enum"], ["created_at", "time"]]) +
+  T("conn", 40, 580, "email_connections", "Gmail link", [["*id", "uuid"], [">user_id", "unique"], ["email_address · scopes", "text"], ["can_read_replies · status", ""]]) +
+  T("secrets", 40, 760, "email_connection_secrets", "no user access", [["*>connection_id", "uuid"], ["refresh_token_encrypted", "AES-256-GCM"], ["access_token_encrypted", "AES-256-GCM"]], "sec") +
+
+  T("cases", 430, 120, "cases", "core record", [["*id", "uuid"], [">user_id", "uuid"], ["case_number", "RSV-XXXX-XXXX"], ["issue_category", "4 types"], ["institution_name · amount · currency", ""], ["transaction_date · reference · channel", ""], ["incident_description", "≤ 5,000 chars"], ["status", "8 states"], ["intake_status · intake_step", "draft wizard"]]) +
+  T("events", 430, 430, "case_events", "append-only", [["*id", "uuid"], [">case_id · >user_id", "uuid"], ["event_type", "29 types"], ["description · metadata", ""]]) +
+  T("evidence", 430, 590, "evidence", "private files", [["*id", "uuid"], [">case_id · >user_id", "uuid"], ["file_path", "user/case/file"], ["mime_type · file_size", "PNG/JPG/PDF ≤ 10 MB"], ["extraction_status", "AI reading"]]) +
+
+  T("analyses", 820, 120, "ai_analyses", "AI results", [["*id", "uuid"], [">case_id · >evidence_id", "uuid"], ["analysis_type", "case | extraction"], ["structured_result", "jsonb"], ["model_identifier · user_review", ""]]) +
+  T("drafts", 820, 330, "complaint_drafts", "versioned", [["*id", "uuid"], [">case_id", "uuid"], ["version", "1, 2, 3…"], ["subject · content", "text"], ["status", "draft | approved | superseded"]]) +
+  T("toolruns", 820, 520, "ai_tool_runs", "audit", [["*id", "uuid"], [">case_id · >user_id", "uuid"], ["tool", "7 tools"], ["status · model · input · output", ""]]) +
+  T("guidance", 820, 690, "guidance_sources", "public reference", [["*id", "uuid"], ["title · institution · source_url", ""], ["issue_category", "or all"], ["status · verified_at", "verified only with date"]], "ref") +
+
+  T("subs", 1230, 120, "complaint_submissions", "server-written", [["*id", "uuid"], [">case_id · >draft_id", "uuid"], [">channel_id", "uuid"], ["method", "email | portal | api"], ["recipient · recipient_source", ""], ["status", "8 states"], ["idempotency_key", "unique per user"], ["authorized_at · statement", "consent record"], ["provider_message_id · sent_at", "proof of sending"]]) +
+  T("audit", 1230, 450, "submission_audit_log", "append-only", [["*id", "bigint"], [">submission_id", "uuid"], ["action · detail", ""]]) +
+  T("responses", 1230, 590, "bank_responses", "replies", [["*id", "uuid"], [">case_id · >submission_id", "uuid"], ["source", "email reply | user"], ["body_text · analysis", ""]]) +
+  T("channels", 1230, 760, "bank_contact_channels", "admin-curated", [["*id", "uuid"], ["bank_id · channel_type", ""], ["value · source_url", "https only"], ["status · verified_at", ""]], "ref")
+);
+</script>
+
+<div class="legend" style="left:40px;top:930px;width:1520px;flex-wrap:wrap;gap:26px">
+  <span><b class="pk">key</b> primary key</span><span><b class="fk">blue</b> foreign key</span>
+  <span><span class="tag" style="background:#0b1530;color:#fff">navy</span>user-owned, RLS: user_id = auth.uid()</span>
+  <span><span class="tag" style="background:#2563eb;color:#fff">blue</span>reference data: read-only for users, admin-managed</span>
+  <span><span class="tag" style="background:#475569;color:#fff">slate</span>identity / secrets: no direct user access</span>
+</div>
+<div class="legend" style="left:40px;top:970px;width:1520px;line-height:1.5;display:block">
+  Every table that belongs to a user is linked to <b>auth.users</b> through <b>user_id</b> (cascade delete, so deleting an account deletes all its data). Not drawn individually, to keep the diagram readable. ai_analyses also links to evidence, and bank_responses to cases.
+  Database triggers generate case numbers, log every status change, block changes to ownership fields, cap evidence at 10 files per case, and check that each submission belongs to the same user as its case and complaint.
+</div>
+<svg class="wires" id="w" viewBox="0 0 1600 1180"><defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto"><path d="M0,0L10,5L0,10z" fill="#6b86b8"/></marker></defs></svg>
+<script>
+const w = document.getElementById("w");
+const B = (id) => { const e = document.getElementById(id); const x = e.offsetLeft, y = e.offsetTop, wd = e.offsetWidth, h = e.offsetHeight; return { x, y, w: wd, h, r: x + wd, b: y + h, cx: x + wd / 2 }; };
+const draw = (d) => { const p = document.createElementNS("http://www.w3.org/2000/svg", "path"); p.setAttribute("d", d); p.setAttribute("marker-end", "url(#a)"); w.appendChild(p); };
+const [users, profiles, conn, secrets, cases, events, evidence, analyses, drafts, toolruns, subs, audit, responses, channels] =
+  ["users","profiles","conn","secrets","cases","events","evidence","analyses","drafts","toolruns","subs","audit","responses","channels"].map(B);
+// Adjacent tables in the same column: straight vertical links.
+draw(`M${profiles.cx} ${profiles.y} V ${users.b}`);
+draw(`M${secrets.cx} ${secrets.y} V ${conn.b}`);
+draw(`M${events.cx} ${events.y} V ${cases.b}`);
+draw(`M${audit.cx} ${audit.y} V ${subs.b}`);
+// evidence → cases, through the gap to the right of the column.
+draw(`M${evidence.r} ${evidence.y + 22} C ${evidence.r + 40} ${evidence.y + 22}, ${cases.r + 40} ${cases.b - 24}, ${cases.r} ${cases.b - 24}`);
+// AI tables → cases, through the gap between the columns.
+draw(`M${analyses.x} ${analyses.y + 22} H ${cases.r}`);
+draw(`M${drafts.x} ${drafts.y + 22} C ${drafts.x - 30} ${drafts.y + 22}, ${cases.r + 30} ${cases.y + 70}, ${cases.r} ${cases.y + 70}`);
+draw(`M${toolruns.x} ${toolruns.y + 22} C ${toolruns.x - 30} ${toolruns.y + 22}, ${cases.r + 30} ${cases.y + 118}, ${cases.r} ${cases.y + 118}`);
+// complaint_submissions → cases, over the top of the tables.
+draw(`M${subs.x + 70} ${subs.y} V ${cases.y - 16} H ${cases.r - 70} V ${cases.y}`);
+// complaint_submissions → complaint_drafts and → bank_contact_channels; bank_responses → complaint_submissions.
+draw(`M${subs.x} ${subs.y + 70} C ${subs.x - 40} ${subs.y + 70}, ${drafts.r + 40} ${drafts.y + 22}, ${drafts.r} ${drafts.y + 22}`);
+draw(`M${responses.x} ${responses.y + 22} C ${responses.x - 45} ${responses.y + 22}, ${subs.x - 45} ${subs.b - 24}, ${subs.x} ${subs.b - 24}`);
+draw(`M${subs.r} ${subs.b - 30} C ${subs.r + 30} ${subs.b - 30}, ${channels.r + 30} ${channels.y + 22}, ${channels.r} ${channels.y + 22}`);
+</script>
+</div></body></html>

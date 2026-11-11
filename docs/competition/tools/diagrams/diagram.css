@@ -1,0 +1,24 @@
+/* Shared look for Resolve evidence diagrams: navy, white, restrained blue. */
+* { box-sizing: border-box; }
+html, body { margin: 0; background: #fff; font-family: Inter, system-ui, sans-serif; color: #0b1530; -webkit-font-smoothing: antialiased; }
+#d { position: relative; overflow: hidden; background: #fff; }
+.box { position: absolute; border: 1.5px solid #c9d5ea; border-radius: 14px; background: #fff; padding: 14px 16px; box-shadow: 0 1px 0 rgb(11 21 48 / 0.04); }
+.box h4 { margin: 0 0 6px; font-size: 17px; font-weight: 650; letter-spacing: -0.01em; color: #0b1530; }
+.box p, .box li { margin: 0; font-size: 13.5px; line-height: 1.45; color: #45526b; }
+.box ul { margin: 0; padding-left: 16px; }
+.group { position: absolute; border-radius: 20px; border: 1.5px dashed #9fb3d6; background: #f5f8fd; }
+.group > .label { position: absolute; top: 12px; left: 18px; font-size: 13px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: #2563eb; }
+.navy { background: #0b1530; border-color: #0b1530; }
+.navy h4 { color: #fff; } .navy p, .navy li { color: #c4cee3; }
+.blue { border-color: #2563eb; background: #eef4ff; }
+.tag { display: inline-block; font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase; padding: 3px 8px; border-radius: 999px; background: #e7eefc; color: #1d4ed8; margin-right: 6px; }
+.tag.gate { background: #fff4e0; color: #9a5b05; }
+.tag.ai { background: #f1ecff; color: #6d28d9; }
+.tag.ext { background: #eaf7ef; color: #15693a; }
+.tag.prop { background: #fff1f0; color: #b42318; }
+svg.wires { position: absolute; inset: 0; pointer-events: none; }
+svg.wires path { fill: none; stroke: #6b86b8; stroke-width: 2; }
+svg.wires text { font-size: 12px; fill: #45526b; font-family: Inter, sans-serif; }
+.title { position: absolute; left: 40px; top: 28px; font-size: 24px; font-weight: 700; letter-spacing: -0.02em; }
+.subtitle { position: absolute; left: 40px; top: 62px; font-size: 14px; color: #5b6880; }
+.legend { position: absolute; font-size: 12.5px; color: #45526b; display: flex; gap: 18px; align-items: center; }

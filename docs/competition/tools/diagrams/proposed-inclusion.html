@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="diagram.css">
+<style>
+#d{width:1600px;height:900px}
+.banner{position:absolute;left:40px;top:96px;width:1520px;padding:12px 18px;border-radius:12px;background:#fff1f0;border:1.5px solid #f3b7b0;color:#8a1c12;font-size:14.5px;font-weight:500}
+.c{position:absolute;width:280px;min-height:150px;border-radius:14px;border:1.5px dashed #9fb3d6;background:#f8fafd;padding:14px 16px}
+.c b{display:block;font-size:16px;color:#0b1530;margin-bottom:6px}
+.c p{margin:0;font-size:13px;color:#45526b;line-height:1.45}
+.c .k{display:inline-block;margin-top:8px;font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:#2563eb}
+.row-label{position:absolute;left:40px;font-weight:700;font-size:15px;color:#0b1530}
+</style></head><body><div id="d">
+<div class="title">Proposed: credit readiness and financial shock management</div>
+<div class="subtitle">Design direction for Resolve's second and third pillars. These workflows are not built yet.</div>
+<div class="banner">PROPOSED DESIGN, NOT IMPLEMENTED. No screens, database tables or code exist for these features yet. Resolve will not issue credit scores or guarantee loan approval.</div>
+
+<div class="row-label" style="top:170px">Pillar 2 · Credit readiness for small businesses</div>
+<script>
+const row = (y, items) => items.map(([t, d, k], i) => `<div class="c" id="r${y}-${i}" style="left:${40 + i * 310}px;top:${y}px"><b>${t}</b><p>${d}</p><span class="k">${k}</span></div>`).join("");
+document.write(row(200, [
+  ["1. Record income & expenses", "Quick manual entries and uploads of bank statements or POS/wallet exports, in naira, with categories.", "Builds on: case & evidence storage"],
+  ["2. Reconcile & categorise", "AI-assisted suggestions the owner confirms, using the same “labelled by source” approach as case analysis.", "Builds on: AI orchestration + grounding"],
+  ["3. Cash-flow view", "Monthly money in/out, recurring costs, months with negative balance, simple runway estimate.", "New: records tables + charts"],
+  ["4. Record-keeping consistency", "How regularly records are kept, documentation completeness, unresolved disputes.", "New: readiness indicators"],
+  ["5. Lender-ready pack", "A PDF summary of activity and documents the owner can choose to share. A preparation aid, not a score.", "Builds on: PDF statement generator"],
+]));
+document.write(`<div class="row-label" style="top:470px">Pillar 3 · Financial shock management</div>`);
+document.write(row(500, [
+  ["Spot a shock early", "A sudden debit, failed payment, or a fall in income in the owner's own records.", "Uses: records + case data"],
+  ["Act on the problem", "Start a complaint case directly from the transaction, pre-filled, using today's complaint workflow.", "Builds on: implemented case flow"],
+  ["Plan the next weeks", "A simple buffer plan and a list of essential versus deferrable costs.", "New: planning tool"],
+  ["Official help", "Links to verified official guidance and consumer-protection channels.", "Builds on: guidance engine"],
+  ["Follow through", "Reminders and a timeline until the problem is resolved.", "Builds on: tracking & reminders"],
+]));
+</script>
+<div class="legend" style="left:40px;top:780px;width:1520px;display:block;line-height:1.55">
+  These pillars are designed to reuse what is already built and tested: authentication, Row Level Security, private file storage, the audited AI tool layer with source labelling, PDF generation and case tracking. Any lending-related feature would need regulatory review and authorised partners before launch.
+</div>
+</div></body></html>

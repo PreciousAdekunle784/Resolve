@@ -1,0 +1,44 @@
+<!doctype html><html><head><meta charset="utf-8"><link rel="stylesheet" href="diagram.css">
+<style>#d{width:1600px;height:1000px}</style></head><body><div id="d">
+<div class="title">Resolve: implemented system architecture</div>
+<div class="subtitle">Every component shown here exists in the codebase and runs in the deployed application (resolve-finance.vercel.app).</div>
+
+<div class="box navy" style="left:40px;top:120px;width:300px;height:250px">
+  <h4>User's browser or phone</h4>
+  <ul><li>Responsive web app (React 19)</li><li>Forms, dashboards, case pages</li><li>Uploads evidence straight to private storage with a short-lived signed URL</li><li>Never receives secret keys</li></ul>
+</div>
+
+<div class="group" style="left:400px;top:110px;width:560px;height:760px"><div class="label">Resolve app · Next.js 16 on Vercel (server)</div></div>
+<div class="box" style="left:425px;top:150px;width:510px;height:96px"><h4>Pages &amp; server actions</h4><p>Server-rendered pages (dashboard, report wizard, case workspace, settings, admin); form actions validated with Zod</p></div>
+<div class="box" style="left:425px;top:258px;width:510px;height:96px"><h4>API routes (19)</h4><p>Evidence, AI analysis, complaints, PDFs, submissions, replies, Gmail OAuth, scheduled job. Same-origin checks; per-user ownership checks</p></div>
+<div class="box" style="left:425px;top:366px;width:245px;height:118px"><h4>Session proxy</h4><p>Refreshes the Supabase session cookie on every request; protects app pages</p></div>
+<div class="box" style="left:690px;top:366px;width:245px;height:118px"><h4>PDF generation</h4><p>Complaint letters and account statements (pdf-lib)</p></div>
+<div class="box blue" style="left:425px;top:496px;width:510px;height:118px"><h4>AI orchestration layer</h4><p>7 predefined, audited tools: identify bank · discover channels · generate complaint · validate · prepare email · analyse bank reply · recovery plan. Zod-validated outputs + grounding checks</p></div>
+<div class="box blue" style="left:425px;top:626px;width:510px;height:118px"><h4>Submission engine</h4><p>Explicit authorisation · idempotency keys · atomic claim before sending · “Sent” only with provider proof · reconciliation of uncertain sends</p></div>
+<div class="box" style="left:425px;top:756px;width:510px;height:96px"><h4>Scheduled job (Vercel Cron, daily)</h4><p>Resolves interrupted sends and checks Gmail threads for bank replies (secret-protected)</p></div>
+
+<div class="group" style="left:1020px;top:110px;width:540px;height:400px"><div class="label">Supabase</div></div>
+<div class="box" style="left:1045px;top:150px;width:490px;height:84px"><h4>Auth</h4><p>Email + password accounts, JWT sessions, password reset</p></div>
+<div class="box" style="left:1045px;top:246px;width:490px;height:118px"><h4>PostgreSQL · 15 tables</h4><p>Row Level Security on every table (42 policies). Append-only case history. Triggers for case numbers, status logging and ownership checks</p></div>
+<div class="box" style="left:1045px;top:376px;width:490px;height:118px"><h4>Storage · private “evidence” bucket</h4><p>PNG / JPG / PDF only, 10 MB limit, owner-only folder policies, 5-minute signed links; server re-checks file contents</p></div>
+
+<div class="box" style="left:1020px;top:540px;width:540px;height:132px"><span class="tag ai">AI</span><h4 style="display:inline">AI provider (server-side only)</h4><p style="margin-top:6px">Google Gemini (deployed) or Anthropic Claude, behind one provider interface. Reads uploaded receipts and statements (document extraction), analyses cases, drafts complaints, explains replies</p></div>
+<div class="box" style="left:1020px;top:686px;width:540px;height:96px"><span class="tag ext">External</span><h4 style="display:inline">Gmail API (user's own account)</h4><p style="margin-top:6px">OAuth 2.0 + PKCE; send authorised complaints; optional read-only reply checks</p></div>
+<div class="box" style="left:1020px;top:796px;width:540px;height:96px"><span class="tag ext">Reference</span><h4 style="display:inline">Official guidance sources</h4><p style="margin-top:6px">CBN consumer-protection pages stored as links with a verification status; admin-curated bank contact channels</p></div>
+
+<svg class="wires" viewBox="0 0 1600 1000">
+  <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0L10,5L0,10z" fill="#6b86b8"/></marker></defs>
+  <path d="M340 220 H 400" marker-end="url(#a)" marker-start="url(#a)"/><text x="342" y="210">HTTPS</text>
+  <path d="M325 370 V 950 H 1585 V 435 H 1537" marker-end="url(#a)" stroke-dasharray="6 5"/><text x="560" y="944">Direct evidence upload with a short-lived signed URL (private bucket)</text>
+  <path d="M960 200 H 1020" marker-end="url(#a)"/><text x="962" y="190">session</text>
+  <path d="M960 300 H 1020" marker-end="url(#a)"/><text x="962" y="290">user JWT</text>
+  <text x="962" y="318">(RLS applies)</text>
+  <path d="M960 560 H 1020" marker-end="url(#a)" marker-start="url(#a)"/><text x="962" y="550">JSON</text>
+  <path d="M960 690 H 1020" marker-end="url(#a)" marker-start="url(#a)"/><text x="962" y="680">OAuth</text>
+  <path d="M960 830 H 1020" marker-end="url(#a)"/>
+</svg>
+<div class="legend" style="left:40px;top:400px;width:270px;flex-direction:column;align-items:flex-start;gap:10px">
+  <div><b style="color:#0b1530">Secrets stay on the server</b><br>Supabase secret key, AI key, Google client secret and the token-encryption key are server-only environment variables.</div>
+  <div><b style="color:#0b1530">Privileged access is narrow</b><br>The service-role key is used only for account deletion, encrypted Gmail tokens and recording provider-confirmed submission results, after an ownership check.</div>
+</div>
+</div></body></html>
